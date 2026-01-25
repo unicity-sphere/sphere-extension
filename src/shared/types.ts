@@ -33,6 +33,28 @@ export interface TokenBalance {
   amount: string;
 }
 
+// ============ Nametag Types ============
+
+export interface NametagInfo {
+  /** Nametag name (e.g., "alice") */
+  nametag: string;
+  /** Deterministic proxy address for receiving */
+  proxyAddress: string;
+  /** On-chain nametag token ID */
+  tokenId: string;
+  /** Current status */
+  status: 'active' | 'minting' | 'pending';
+}
+
+export interface NametagResolution {
+  /** Nametag name */
+  nametag: string;
+  /** Owner's NOSTR public key */
+  pubkey: string;
+  /** Proxy address for sending tokens */
+  proxyAddress: string;
+}
+
 export interface SendTokensResult {
   /** Generated transaction ID for tracking */
   transactionId: string;
@@ -122,7 +144,11 @@ export type SphereRequestType =
   | 'SPHERE_SEND_TOKENS'
   | 'SPHERE_SIGN_MESSAGE'
   | 'SPHERE_GET_NOSTR_PUBLIC_KEY'
-  | 'SPHERE_SIGN_NOSTR_EVENT';
+  | 'SPHERE_SIGN_NOSTR_EVENT'
+  | 'SPHERE_RESOLVE_NAMETAG'
+  | 'SPHERE_MINT_NAMETAG'
+  | 'SPHERE_GET_MY_NAMETAGS'
+  | 'SPHERE_CHECK_NAMETAG_AVAILABLE';
 
 /** Message types from background to content/inject */
 export type SphereResponseType =
@@ -134,7 +160,11 @@ export type SphereResponseType =
   | 'SPHERE_SIGN_MESSAGE_RESPONSE'
   | 'SPHERE_GET_NOSTR_PUBLIC_KEY_RESPONSE'
   | 'SPHERE_SIGN_NOSTR_EVENT_RESPONSE'
-  | 'SPHERE_TRANSACTION_RESULT';
+  | 'SPHERE_TRANSACTION_RESULT'
+  | 'SPHERE_RESOLVE_NAMETAG_RESPONSE'
+  | 'SPHERE_MINT_NAMETAG_RESPONSE'
+  | 'SPHERE_GET_MY_NAMETAGS_RESPONSE'
+  | 'SPHERE_CHECK_NAMETAG_AVAILABLE_RESPONSE';
 
 /** Message types from popup to background */
 export type PopupMessageType =
@@ -320,6 +350,51 @@ export interface PopupGetAddressResponse extends BaseResponse {
   address?: string;
 }
 
+// ============ Nametag Request/Response Types ============
+
+// Resolve Nametag
+export interface ResolveNametagRequest extends BaseRequest {
+  type: 'SPHERE_RESOLVE_NAMETAG';
+  nametag: string;
+}
+
+export interface ResolveNametagResponse extends BaseResponse {
+  type: 'SPHERE_RESOLVE_NAMETAG_RESPONSE';
+  resolution?: NametagResolution | null;
+}
+
+// Check Nametag Available
+export interface CheckNametagAvailableRequest extends BaseRequest {
+  type: 'SPHERE_CHECK_NAMETAG_AVAILABLE';
+  nametag: string;
+}
+
+export interface CheckNametagAvailableResponse extends BaseResponse {
+  type: 'SPHERE_CHECK_NAMETAG_AVAILABLE_RESPONSE';
+  available?: boolean;
+}
+
+// Mint Nametag
+export interface MintNametagRequest extends BaseRequest {
+  type: 'SPHERE_MINT_NAMETAG';
+  nametag: string;
+}
+
+export interface MintNametagResponse extends BaseResponse {
+  type: 'SPHERE_MINT_NAMETAG_RESPONSE';
+  nametag?: NametagInfo;
+}
+
+// Get My Nametags
+export interface GetMyNametagsRequest extends BaseRequest {
+  type: 'SPHERE_GET_MY_NAMETAGS';
+}
+
+export interface GetMyNametagsResponse extends BaseResponse {
+  type: 'SPHERE_GET_MY_NAMETAGS_RESPONSE';
+  nametags?: NametagInfo[];
+}
+
 // ============ Union Types ============
 
 export type SphereRequest =
@@ -330,7 +405,11 @@ export type SphereRequest =
   | SendTokensRequest
   | SignMessageRequest
   | GetNostrPublicKeyRequest
-  | SignNostrEventRequest;
+  | SignNostrEventRequest
+  | ResolveNametagRequest
+  | CheckNametagAvailableRequest
+  | MintNametagRequest
+  | GetMyNametagsRequest;
 
 export type SphereResponse =
   | ConnectResponse
@@ -341,4 +420,8 @@ export type SphereResponse =
   | SignMessageResponse
   | GetNostrPublicKeyResponse
   | SignNostrEventResponse
-  | TransactionResultMessage;
+  | TransactionResultMessage
+  | ResolveNametagResponse
+  | CheckNametagAvailableResponse
+  | MintNametagResponse
+  | GetMyNametagsResponse;

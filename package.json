@@ -16,6 +16,8 @@
     "@noble/secp256k1": "^2.1.0",
     "@scure/base": "^1.1.0",
     "@tailwindcss/postcss": "^4.1.18",
+    "@unicitylabs/nostr-js-sdk": "^0.3.2",
+    "@unicitylabs/state-transition-sdk": "1.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^5.0.0"

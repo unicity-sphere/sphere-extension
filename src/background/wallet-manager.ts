@@ -11,9 +11,11 @@
 
 import { Wallet, Identity, AlphaClient } from '@jvsteiner/alphalite';
 import type { IWalletJson } from '@jvsteiner/alphalite';
-import type { IdentityInfo, TokenBalance, WalletState, SendTokensResult } from '@/shared/types';
+import { ProxyAddress } from '@unicitylabs/state-transition-sdk/lib/address/ProxyAddress';
+import type { IdentityInfo, TokenBalance, WalletState, SendTokensResult, NametagResolution } from '@/shared/types';
 import { COIN_SYMBOLS, ALPHA_COIN_ID, GATEWAY_URL } from '@/shared/constants';
 import { deriveNostrKeyPair, signNostrEvent, signMessage } from './nostr-keys';
+import { nostrService } from './nostr-service';
 
 /**
  * In-memory wallet state (cleared on lock or extension restart)
@@ -64,6 +66,9 @@ export class WalletManager {
     // Keep wallet unlocked in memory
     this.unlockedWallet = { wallet, password };
 
+    // Connect to NOSTR relay
+    await this.connectNostr();
+
     // Return the default identity info
     return this.identityToInfo(wallet.getDefaultIdentity());
   }
@@ -88,6 +93,9 @@ export class WalletManager {
     // Keep wallet unlocked in memory
     this.unlockedWallet = { wallet, password };
 
+    // Connect to NOSTR relay
+    await this.connectNostr();
+
     return this.identityToInfo(wallet.getDefaultIdentity());
   }
 
@@ -108,13 +116,19 @@ export class WalletManager {
 
     this.unlockedWallet = { wallet, password };
 
+    // Connect to NOSTR relay
+    await this.connectNostr();
+
     return this.identityToInfo(wallet.getDefaultIdentity());
   }
 
   /**
    * Lock the wallet (clear from memory).
    */
-  lock(): void {
+  async lock(): Promise<void> {
+    // Disconnect from NOSTR relay
+    await nostrService.disconnect();
+
     this.unlockedWallet = null;
     this.alphaClient = null;
   }
@@ -291,30 +305,73 @@ export class WalletManager {
   /**
    * Send tokens to a recipient.
    *
+   * Supports sending to:
+   * - Public key (hex string starting with valid hex)
+   * - Nametag (e.g., "@alice" or "alice")
+   *
+   * When sending to a nametag:
+   * - Resolves nametag to proxy address
+   * - Sends tokens to proxy address
+   * - Sends P2P notification via NOSTR to recipient's pubkey
+   *
    * @param coinId Hex-encoded coin ID
    * @param amount Amount to send (as string to handle bigint)
-   * @param recipientPublicKey Recipient's public key (hex string)
+   * @param recipient Recipient's public key OR nametag
    * @returns Result containing transaction ID and payload
    */
   async sendAmount(
     coinId: string,
     amount: string,
-    recipientPublicKey: string
+    recipient: string
   ): Promise<SendTokensResult> {
     const wallet = this.getWallet();
     const client = this.getAlphaClient();
-
     const amountBigInt = BigInt(amount);
 
+    let recipientAddress: string;
+    let recipientPubkey: string | null = null;
+
+    // Check if recipient is a nametag
+    const isNametag = recipient.startsWith('@') || !this.isHexString(recipient);
+
+    if (isNametag) {
+      // Resolve nametag to proxy address and pubkey
+      const resolution = await this.resolveNametag(recipient);
+      if (!resolution) {
+        const cleanTag = recipient.replace('@', '').trim();
+        throw new Error(`Nametag @${cleanTag} not found`);
+      }
+      recipientAddress = resolution.proxyAddress;
+      recipientPubkey = resolution.pubkey;
+    } else {
+      // Recipient is a direct public key
+      recipientAddress = recipient;
+    }
+
+    // Send tokens to the address
     const result = await client.sendAmount(
       wallet,
       coinId,
       amountBigInt,
-      recipientPublicKey
+      recipientAddress
     );
 
     // Save wallet after successful send
     await this.saveWallet();
+
+    // If sending to nametag, send P2P notification via NOSTR
+    if (recipientPubkey && nostrService.getIsConnected()) {
+      try {
+        await nostrService.sendTokenTransfer(
+          recipientPubkey,
+          result.recipientPayload,
+          { amount: amountBigInt, symbol: COIN_SYMBOLS[coinId] ?? 'TOKEN' }
+        );
+      } catch (error) {
+        // Log but don't fail the transaction - tokens are already sent
+        console.error('Failed to send NOSTR notification:', error);
+      }
+    }
 
     return {
       transactionId: `tx_${Date.now()}_${Math.random().toString(36).slice(2)}`,
@@ -323,6 +380,14 @@ export class WalletManager {
       tokensUsed: result.tokensUsed,
       splitPerformed: result.splitPerformed,
     };
+  }
+
+  /**
+   * Check if a string is a valid hex string (for public keys/addresses).
+   */
+  private isHexString(str: string): boolean {
+    // Valid hex strings are even length and contain only hex characters
+    return /^[0-9a-fA-F]+$/.test(str) && str.length % 2 === 0 && str.length >= 32;
   }
 
   /**
@@ -415,6 +480,53 @@ export class WalletManager {
    */
   getRawWallet(): Wallet {
     return this.getWallet();
+  }
+
+  // ============ Nametag Operations ============
+
+  /**
+   * Resolve a nametag to its NOSTR pubkey and proxy address.
+   *
+   * @param nametag Nametag to resolve (with or without @)
+   * @returns Resolution info or null if not found
+   */
+  async resolveNametag(nametag: string): Promise<NametagResolution | null> {
+    // Clean the nametag
+    const cleanTag = nametag.replace('@unicity', '').replace('@', '').trim();
+
+    // Query NOSTR for the pubkey
+    const pubkey = await nostrService.queryPubkeyByNametag(cleanTag);
+    if (!pubkey) {
+      return null;
+    }
+
+    // Derive the proxy address from the nametag
+    const proxyAddress = await ProxyAddress.fromNameTag(cleanTag);
+
+    return {
+      nametag: cleanTag,
+      pubkey,
+      proxyAddress: proxyAddress.address,
+    };
+  }
+
+  // ============ NOSTR Connection ============
+
+  /**
+   * Connect to NOSTR relay with the active identity's key.
+   */
+  private async connectNostr(): Promise<void> {
+    if (!this.unlockedWallet) return;
+
+    try {
+      const activeIdentity = this.unlockedWallet.wallet.getDefaultIdentity();
+      const keyPair = deriveNostrKeyPair(activeIdentity);
+      const privateKeyHex = this.bytesToHex(keyPair.privateKey);
+      await nostrService.connect(privateKeyHex);
+    } catch (error) {
+      console.error('Failed to connect to NOSTR:', error);
+      // Don't throw - NOSTR is not critical for basic wallet operation
+    }
   }
 
   // ============ Helpers ============

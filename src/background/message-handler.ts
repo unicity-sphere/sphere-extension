@@ -87,6 +87,12 @@ export async function handleContentMessage(
           message.eventHash as string
         );
 
+      case 'SPHERE_RESOLVE_NAMETAG':
+        return handleResolveNametag(origin, message.nametag as string);
+
+      case 'SPHERE_CHECK_NAMETAG_AVAILABLE':
+        return handleCheckNametagAvailable(origin, message.nametag as string);
+
       default:
         return {
           type: `${type}_RESPONSE`,
@@ -156,7 +162,7 @@ export async function handlePopupMessage(
       }
 
       case 'POPUP_LOCK_WALLET':
-        walletManager.lock();
+        await walletManager.lock();
         return {
           success: true,
           state: await walletManager.getState(),
@@ -520,6 +526,89 @@ async function handleSignNostrEventRequest(
     type: 'SPHERE_SIGN_NOSTR_EVENT_RESPONSE',
     success: true,
   };
+}
+
+async function handleResolveNametag(
+  origin: string,
+  nametag: string
+): Promise<{
+  type: string;
+  success: boolean;
+  resolution?: { nametag: string; pubkey: string; proxyAddress: string } | null;
+  error?: string;
+}> {
+  if (!connectedSites.has(origin)) {
+    return {
+      type: 'SPHERE_RESOLVE_NAMETAG_RESPONSE',
+      success: false,
+      error: 'Not connected. Call connect() first.',
+    };
+  }
+
+  if (!walletManager.isUnlocked()) {
+    return {
+      type: 'SPHERE_RESOLVE_NAMETAG_RESPONSE',
+      success: false,
+      error: 'Wallet is locked.',
+    };
+  }
+
+  try {
+    const resolution = await walletManager.resolveNametag(nametag);
+    return {
+      type: 'SPHERE_RESOLVE_NAMETAG_RESPONSE',
+      success: true,
+      resolution,
+    };
+  } catch (error) {
+    return {
+      type: 'SPHERE_RESOLVE_NAMETAG_RESPONSE',
+      success: false,
+      error: (error as Error).message,
+    };
+  }
+}
+
+async function handleCheckNametagAvailable(
+  origin: string,
+  nametag: string
+): Promise<{
+  type: string;
+  success: boolean;
+  available?: boolean;
+  error?: string;
+}> {
+  if (!connectedSites.has(origin)) {
+    return {
+      type: 'SPHERE_CHECK_NAMETAG_AVAILABLE_RESPONSE',
+      success: false,
+      error: 'Not connected. Call connect() first.',
+    };
+  }
+
+  if (!walletManager.isUnlocked()) {
+    return {
+      type: 'SPHERE_CHECK_NAMETAG_AVAILABLE_RESPONSE',
+      success: false,
+      error: 'Wallet is locked.',
+    };
+  }
+
+  try {
+    // If we can't resolve it, it's available
+    const resolution = await walletManager.resolveNametag(nametag);
+    return {
+      type: 'SPHERE_CHECK_NAMETAG_AVAILABLE_RESPONSE',
+      success: true,
+      available: resolution === null,
+    };
+  } catch (error) {
+    return {
+      type: 'SPHERE_CHECK_NAMETAG_AVAILABLE_RESPONSE',
+      success: false,
+      error: (error as Error).message,
+    };
+  }
 }
 
 // ============ Transaction Approval/Rejection ============

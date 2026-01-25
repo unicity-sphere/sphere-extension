@@ -11,6 +11,7 @@ import { generateRequestId, REQUEST_TIMEOUT } from '@/shared/messages';
 import type {
   IdentityInfo,
   TokenBalance,
+  NametagResolution,
   SphereResponse,
 } from '@/shared/types';
 
@@ -152,6 +153,34 @@ class SphereAPI {
   async signNostrEvent(eventHash: string): Promise<string> {
     const response = await this.createRequest<{ signature: string }>('SPHERE_SIGN_NOSTR_EVENT', { eventHash });
     return response.signature;
+  }
+
+  /**
+   * Resolve a nametag to its NOSTR pubkey and proxy address.
+   *
+   * @param nametag Nametag to resolve (e.g., "alice" or "@alice")
+   * @returns Resolution info or null if not found
+   */
+  async resolveNametag(nametag: string): Promise<NametagResolution | null> {
+    const response = await this.createRequest<{ resolution: NametagResolution | null }>(
+      'SPHERE_RESOLVE_NAMETAG',
+      { nametag }
+    );
+    return response.resolution;
+  }
+
+  /**
+   * Check if a nametag is available for registration.
+   *
+   * @param nametag Nametag to check (e.g., "alice")
+   * @returns true if available, false if already taken
+   */
+  async checkNametagAvailable(nametag: string): Promise<boolean> {
+    const response = await this.createRequest<{ available: boolean }>(
+      'SPHERE_CHECK_NAMETAG_AVAILABLE',
+      { nametag }
+    );
+    return response.available;
   }
 }
 
