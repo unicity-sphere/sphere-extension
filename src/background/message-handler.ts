@@ -30,6 +30,38 @@ import type {
 /** Connected sites (origin -> boolean) */
 const connectedSites = new Map<string, boolean>();
 
+/** Pending connect requests waiting for wallet unlock */
+interface PendingConnectRequest {
+  origin: string;
+  resolve: (response: { type: string; success: boolean; identity?: IdentityInfo; error?: string }) => void;
+  timestamp: number;
+}
+const pendingConnectRequests: PendingConnectRequest[] = [];
+
+/** Timeout for pending connect requests (60 seconds) */
+const CONNECT_TIMEOUT_MS = 60000;
+
+/**
+ * Resolve all pending connect requests after wallet unlock.
+ */
+function resolvePendingConnectRequests(): void {
+  if (!walletManager.isUnlocked()) return;
+
+  const identity = walletManager.getActiveIdentity();
+
+  while (pendingConnectRequests.length > 0) {
+    const request = pendingConnectRequests.shift();
+    if (request) {
+      connectedSites.set(request.origin, true);
+      request.resolve({
+        type: 'SPHERE_CONNECT_RESPONSE',
+        success: true,
+        identity,
+      });
+    }
+  }
+}
+
 /**
  * Handle messages from content scripts (web page requests).
  */
@@ -155,6 +187,10 @@ export async function handlePopupMessage(
       case 'POPUP_UNLOCK_WALLET': {
         const password = message.password as string;
         const identity = await walletManager.unlock(password);
+
+        // Resolve any pending connect requests now that wallet is unlocked
+        resolvePendingConnectRequests();
+
         return {
           success: true,
           identity,
@@ -301,23 +337,41 @@ async function handleConnect(origin: string): Promise<{
   identity?: IdentityInfo;
   error?: string;
 }> {
-  if (!walletManager.isUnlocked()) {
-    await openPopup();
+  // If wallet is already unlocked, connect immediately
+  if (walletManager.isUnlocked()) {
+    connectedSites.set(origin, true);
+    const identity = walletManager.getActiveIdentity();
     return {
       type: 'SPHERE_CONNECT_RESPONSE',
-      success: false,
-      error: 'Wallet is locked. Please unlock in the extension popup.',
+      success: true,
+      identity,
     };
   }
 
-  connectedSites.set(origin, true);
-  const identity = walletManager.getActiveIdentity();
+  // Wallet is locked - open popup and wait for unlock
+  await openPopup();
 
-  return {
-    type: 'SPHERE_CONNECT_RESPONSE',
-    success: true,
-    identity,
-  };
+  return new Promise((resolve) => {
+    const request: PendingConnectRequest = {
+      origin,
+      resolve,
+      timestamp: Date.now(),
+    };
+    pendingConnectRequests.push(request);
+
+    // Set timeout to avoid hanging forever
+    setTimeout(() => {
+      const index = pendingConnectRequests.indexOf(request);
+      if (index !== -1) {
+        pendingConnectRequests.splice(index, 1);
+        resolve({
+          type: 'SPHERE_CONNECT_RESPONSE',
+          success: false,
+          error: 'Connection timed out. Please try again.',
+        });
+      }
+    }, CONNECT_TIMEOUT_MS);
+  });
 }
 
 async function handleDisconnect(origin: string): Promise<{ type: string; success: boolean }> {
