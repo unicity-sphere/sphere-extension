@@ -153,6 +153,8 @@ export type SphereRequestType =
   | 'SPHERE_SIGN_MESSAGE'
   | 'SPHERE_GET_NOSTR_PUBLIC_KEY'
   | 'SPHERE_SIGN_NOSTR_EVENT'
+  | 'SPHERE_NIP44_ENCRYPT'
+  | 'SPHERE_NIP44_DECRYPT'
   | 'SPHERE_RESOLVE_NAMETAG'
   | 'SPHERE_MINT_NAMETAG'
   | 'SPHERE_GET_MY_NAMETAGS'
@@ -168,6 +170,8 @@ export type SphereResponseType =
   | 'SPHERE_SIGN_MESSAGE_RESPONSE'
   | 'SPHERE_GET_NOSTR_PUBLIC_KEY_RESPONSE'
   | 'SPHERE_SIGN_NOSTR_EVENT_RESPONSE'
+  | 'SPHERE_NIP44_ENCRYPT_RESPONSE'
+  | 'SPHERE_NIP44_DECRYPT_RESPONSE'
   | 'SPHERE_TRANSACTION_RESULT'
   | 'SPHERE_RESOLVE_NAMETAG_RESPONSE'
   | 'SPHERE_MINT_NAMETAG_RESPONSE'
@@ -294,6 +298,30 @@ export interface SignNostrEventRequest extends BaseRequest {
 export interface SignNostrEventResponse extends BaseResponse {
   type: 'SPHERE_SIGN_NOSTR_EVENT_RESPONSE';
   signature?: string;
+}
+
+// NIP-44 Encrypt
+export interface Nip44EncryptRequest extends BaseRequest {
+  type: 'SPHERE_NIP44_ENCRYPT';
+  recipientPubkey: string;
+  plaintext: string;
+}
+
+export interface Nip44EncryptResponse extends BaseResponse {
+  type: 'SPHERE_NIP44_ENCRYPT_RESPONSE';
+  ciphertext?: string;
+}
+
+// NIP-44 Decrypt
+export interface Nip44DecryptRequest extends BaseRequest {
+  type: 'SPHERE_NIP44_DECRYPT';
+  senderPubkey: string;
+  ciphertext: string;
+}
+
+export interface Nip44DecryptResponse extends BaseResponse {
+  type: 'SPHERE_NIP44_DECRYPT_RESPONSE';
+  plaintext?: string;
 }
 
 // Transaction Result (pushed from background after approval)
@@ -441,6 +469,8 @@ export type SphereRequest =
   | SignMessageRequest
   | GetNostrPublicKeyRequest
   | SignNostrEventRequest
+  | Nip44EncryptRequest
+  | Nip44DecryptRequest
   | ResolveNametagRequest
   | CheckNametagAvailableRequest
   | MintNametagRequest
@@ -455,6 +485,8 @@ export type SphereResponse =
   | SignMessageResponse
   | GetNostrPublicKeyResponse
   | SignNostrEventResponse
+  | Nip44EncryptResponse
+  | Nip44DecryptResponse
   | TransactionResultMessage
   | ResolveNametagResponse
   | CheckNametagAvailableResponse

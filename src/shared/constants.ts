@@ -81,7 +81,7 @@ export const DEFAULT_TOKEN_TYPE = new Uint8Array(32).fill(0x01);
 export const GATEWAY_URL = 'https://goggregator-test.unicity.network';
 
 /** NOSTR event kinds we support signing */
-export const SUPPORTED_NOSTR_KINDS = [0, 1, 3, 4, 5, 6, 7];
+export const SUPPORTED_NOSTR_KINDS = [0, 1, 3, 4, 5, 6, 7, 13, 14, 1059];
 
 /** Bech32 prefix for NOSTR public keys */
 export const NOSTR_NPUB_PREFIX = 'npub';

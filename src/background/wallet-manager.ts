@@ -12,6 +12,7 @@
  */
 
 import { Sphere } from '@unicitylabs/sphere-sdk';
+import { NIP44 } from '@unicitylabs/nostr-js-sdk';
 import {
   createNostrTransportProvider,
   createUnicityAggregatorProvider,
@@ -422,6 +423,20 @@ export class WalletManager {
     return signNostrEvent(keyPair.privateKey, hashBytes);
   }
 
+  nip44Encrypt(recipientPubkeyHex: string, plaintext: string): string {
+    const sphere = this.getSphere();
+    const keyPair = deriveNostrKeyPair(sphere);
+    const privKeyHex = bytesToHex(keyPair.privateKey);
+    return NIP44.encryptHex(plaintext, privKeyHex, recipientPubkeyHex);
+  }
+
+  nip44Decrypt(senderPubkeyHex: string, ciphertext: string): string {
+    const sphere = this.getSphere();
+    const keyPair = deriveNostrKeyPair(sphere);
+    const privKeyHex = bytesToHex(keyPair.privateKey);
+    return NIP44.decryptHex(ciphertext, privKeyHex, senderPubkeyHex);
+  }
+
   signMessageWithIdentity(message: string): string {
     const sphere = this.getSphere();
     const keyPair = deriveNostrKeyPair(sphere);
@@ -627,6 +642,12 @@ function formatSmallestUnits(amount: string, decimals: number): string {
     return `${integerPart}.${fractionalPart}`;
   }
   return integerPart;
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 function hexToBytes(hex: string): Uint8Array {
