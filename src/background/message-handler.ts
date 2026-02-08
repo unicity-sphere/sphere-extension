@@ -141,6 +141,9 @@ export async function handleContentMessage(
       case 'SPHERE_CHECK_NAMETAG_AVAILABLE':
         return handleCheckNametagAvailable(origin, message.nametag as string);
 
+      case 'SPHERE_GET_MY_NAMETAG':
+        return handleGetMyNametag(origin);
+
       default:
         return {
           type: `${type}_RESPONSE`,
@@ -846,6 +849,46 @@ async function handlePopupGetMyNametag(): Promise<{
     return { success: true, nametag };
   } catch (error) {
     return {
+      success: false,
+      error: (error as Error).message || 'Failed to get nametag',
+    };
+  }
+}
+
+async function handleGetMyNametag(
+  origin: string
+): Promise<{
+  type: string;
+  success: boolean;
+  nametag?: NametagInfo | null;
+  error?: string;
+}> {
+  if (!connectedSites.has(origin)) {
+    return {
+      type: 'SPHERE_GET_MY_NAMETAG_RESPONSE',
+      success: false,
+      error: 'Not connected. Call connect() first.',
+    };
+  }
+
+  if (!walletManager.isUnlocked()) {
+    return {
+      type: 'SPHERE_GET_MY_NAMETAG_RESPONSE',
+      success: false,
+      error: 'Wallet is locked.',
+    };
+  }
+
+  try {
+    const nametag = await walletManager.getMyNametag();
+    return {
+      type: 'SPHERE_GET_MY_NAMETAG_RESPONSE',
+      success: true,
+      nametag,
+    };
+  } catch (error) {
+    return {
+      type: 'SPHERE_GET_MY_NAMETAG_RESPONSE',
       success: false,
       error: (error as Error).message || 'Failed to get nametag',
     };

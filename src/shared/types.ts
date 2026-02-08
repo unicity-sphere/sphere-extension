@@ -158,6 +158,7 @@ export type SphereRequestType =
   | 'SPHERE_RESOLVE_NAMETAG'
   | 'SPHERE_MINT_NAMETAG'
   | 'SPHERE_GET_MY_NAMETAGS'
+  | 'SPHERE_GET_MY_NAMETAG'
   | 'SPHERE_CHECK_NAMETAG_AVAILABLE';
 
 /** Message types from background to content/inject */
@@ -176,6 +177,7 @@ export type SphereResponseType =
   | 'SPHERE_RESOLVE_NAMETAG_RESPONSE'
   | 'SPHERE_MINT_NAMETAG_RESPONSE'
   | 'SPHERE_GET_MY_NAMETAGS_RESPONSE'
+  | 'SPHERE_GET_MY_NAMETAG_RESPONSE'
   | 'SPHERE_CHECK_NAMETAG_AVAILABLE_RESPONSE';
 
 /** Message types from popup to background */

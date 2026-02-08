@@ -178,6 +178,18 @@ class SphereAPI {
   };
 
   /**
+   * Get the user's registered nametag, if any.
+   */
+  async getMyNametag(): Promise<{ name: string; proxyAddress: string } | null> {
+    const response = await this.createRequest<{ nametag: { nametag: string; proxyAddress: string } | null }>(
+      'SPHERE_GET_MY_NAMETAG'
+    );
+    return response.nametag
+      ? { name: response.nametag.nametag, proxyAddress: response.nametag.proxyAddress }
+      : null;
+  }
+
+  /**
    * Resolve a nametag to its NOSTR pubkey and proxy address.
    *
    * @param nametag Nametag to resolve (e.g., "alice" or "@alice")
