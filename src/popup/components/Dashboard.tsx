@@ -69,6 +69,11 @@ export function Dashboard() {
         <div className="text-3xl font-bold text-white mb-4">
           {formatBalance(primaryBalance?.amount || '0')} {primaryBalance?.symbol || DEFAULT_COIN_SYMBOL}
         </div>
+        {primaryBalance?.pendingAmount && primaryBalance.pendingAmount !== '0' && (
+          <div className="text-sm text-yellow-400">
+            +{formatBalance(primaryBalance.pendingAmount)} finalizing...
+          </div>
+        )}
 
         {/* Address */}
         <div
@@ -136,9 +141,16 @@ export function Dashboard() {
                 </div>
                 <span className="font-medium">{balance.symbol}</span>
               </div>
-              <span className="text-gray-400">
-                {formatBalance(balance.amount)}
-              </span>
+              <div className="text-right">
+                <span className="text-gray-400">
+                  {formatBalance(balance.amount)}
+                </span>
+                {balance.pendingAmount && balance.pendingAmount !== '0' && (
+                  <div className="text-xs text-yellow-500">
+                    +{formatBalance(balance.pendingAmount)} finalizing
+                  </div>
+                )}
+              </div>
             </div>
           ))}
 

@@ -102,6 +102,20 @@ export function useWallet() {
       });
 
       setBalances(balances);
+
+      // If any tokens are pending finalization, trigger it in the background
+      // and refresh balances when done
+      const hasPending = balances.some((b) => b.pendingAmount && b.pendingAmount !== '0');
+      if (hasPending) {
+        sendMessage({ type: 'POPUP_FINALIZE_TOKENS' }).then(async () => {
+          const { balances: updated } = await sendMessage<{ balances: TokenBalance[] }>({
+            type: 'POPUP_GET_BALANCES',
+          });
+          setBalances(updated);
+        }).catch((err) => {
+          console.error('Background finalization failed:', err);
+        });
+      }
     } catch (error) {
       console.error('Load wallet data error:', error);
       throw error;

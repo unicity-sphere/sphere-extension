@@ -335,18 +335,22 @@ export class WalletManager {
     const balances: TokenBalance[] = [];
 
     try {
-      // Get confirmed tokens grouped by coinId
-      const tokens = sphere.payments.getTokens({ status: 'confirmed' });
-      // Aggregate by coinId
-      const byCoin = new Map<string, { symbol: string; total: bigint; decimals: number }>();
-      for (const tok of tokens) {
+      // Aggregate confirmed and pending tokens separately by coinId
+      const byCoin = new Map<string, { symbol: string; confirmed: bigint; pending: bigint; decimals: number }>();
+
+      const allTokens = sphere.payments.getTokens();
+      for (const tok of allTokens) {
+        if (tok.status !== 'confirmed' && tok.status !== 'submitted') continue;
         const existing = byCoin.get(tok.coinId);
+        const amount = BigInt(tok.amount);
         if (existing) {
-          existing.total += BigInt(tok.amount);
+          if (tok.status === 'confirmed') existing.confirmed += amount;
+          else existing.pending += amount;
         } else {
           byCoin.set(tok.coinId, {
             symbol: COIN_SYMBOLS[tok.coinId] || tok.symbol || 'TOKEN',
-            total: BigInt(tok.amount),
+            confirmed: tok.status === 'confirmed' ? amount : 0n,
+            pending: tok.status === 'submitted' ? amount : 0n,
             decimals: COIN_DECIMALS[tok.coinId] ?? tok.decimals ?? DEFAULT_DECIMALS,
           });
         }
@@ -354,10 +358,14 @@ export class WalletManager {
 
       if (byCoin.size > 0) {
         for (const [coinId, info] of byCoin) {
-          const formatted = formatSmallestUnits(info.total.toString(), info.decimals);
-          console.log('[WalletManager] Formatted:', coinId.slice(0, 8), formatted, 'decimals:', info.decimals);
-          if (formatted === '0' && !COIN_SYMBOLS[coinId]) continue;
-          balances.push({ coinId, symbol: info.symbol, amount: formatted });
+          const formatted = formatSmallestUnits(info.confirmed.toString(), info.decimals);
+          console.log('[WalletManager] Formatted:', coinId.slice(0, 8), formatted, 'pending:', info.pending.toString(), 'decimals:', info.decimals);
+          if (formatted === '0' && info.pending === 0n && !COIN_SYMBOLS[coinId]) continue;
+          const balance: TokenBalance = { coinId, symbol: info.symbol, amount: formatted };
+          if (info.pending > 0n) {
+            balance.pendingAmount = formatSmallestUnits(info.pending.toString(), info.decimals);
+          }
+          balances.push(balance);
         }
       } else {
         balances.push({ coinId: ALPHA_COIN_ID, symbol: 'UCT', amount: '0' });
@@ -591,12 +599,14 @@ export class WalletManager {
     const sphere = this.getSphere();
     const cleanTag = nametag.replace('@', '').trim().toLowerCase();
 
-    try {
-      // Debug: check oracle state
-      const oracle = (sphere as any).getOracle?.() ?? (sphere as any)._oracle;
-      console.log('[WalletManager] Oracle trustBase:', !!oracle?.getTrustBase?.());
-      console.log('[WalletManager] Oracle stClient:', !!oracle?.getStateTransitionClient?.());
+    // If this wallet already owns this nametag (NOSTR binding done, mint may be pending),
+    // treat it as "available" so the user can retry the mint.
+    if (sphere.identity?.nametag === cleanTag) {
+      console.log(`[WalletManager] isNametagAvailable: @${cleanTag} is owned by this wallet, treating as available`);
+      return true;
+    }
 
+    try {
       const result = await sphere.isNametagAvailable(cleanTag);
       console.log('[WalletManager] isNametagAvailable result for', cleanTag, ':', result);
       return result;
@@ -610,17 +620,26 @@ export class WalletManager {
     const sphere = this.getSphere();
     const cleanTag = nametag.replace('@', '').trim().toLowerCase();
 
-    // Register NOSTR binding
-    await sphere.registerNametag(cleanTag);
+    // If identity already has a nametag (e.g. NOSTR binding succeeded but mint
+    // failed on a previous attempt), skip re-registration and just retry the mint.
+    const existingNametag = sphere.identity?.nametag;
+    if (existingNametag) {
+      console.log(`[WalletManager] Identity already has nametag @${existingNametag}, skipping NOSTR binding`);
+      if (existingNametag !== cleanTag) {
+        throw new Error(`Cannot register @${cleanTag}: address already bound to @${existingNametag}`);
+      }
+    } else {
+      // Register NOSTR binding
+      await sphere.registerNametag(cleanTag);
+    }
 
     // Mint on-chain nametag token (required for receiving PROXY transfers)
-    // Note: sphere.registerNametag already attempts mintNametag internally,
-    // but we call it again explicitly in case the internal attempt failed silently
     if (!(sphere as any)._payments?.hasNametag?.()) {
+      console.log('[WalletManager] Minting nametag token on-chain...');
       const mintResult = await (sphere as any).mintNametag(cleanTag);
       if (!mintResult.success) {
         console.error('[WalletManager] Nametag mint failed:', JSON.stringify(mintResult));
-        throw new Error(`Nametag NOSTR binding succeeded but on-chain mint failed: ${JSON.stringify(mintResult.error)}`);
+        throw new Error(`Nametag mint failed: ${JSON.stringify(mintResult.error)}`);
       }
       console.log('[WalletManager] Nametag minted on-chain:', cleanTag);
     } else {
@@ -846,6 +865,34 @@ export class WalletManager {
     return sphere;
   }
 
+  // ============ Token Finalization ============
+
+  /**
+   * Finalize pending (submitted) V5 tokens by polling the aggregator.
+   * Calls sphere.payments.receive({ finalize: true }) which resolves
+   * unconfirmed tokens through the RECEIVED → CONFIRMED pipeline.
+   */
+  async finalizeTokens(): Promise<{ resolved: number; pending: number; failed: number }> {
+    const sphere = this.getSphere();
+    try {
+      console.log('[WalletManager] Starting token finalization...');
+      const result = await sphere.payments.receive({
+        finalize: true,
+        timeout: 60_000,
+        pollInterval: 2_000,
+        onProgress: (res: { resolved: number; stillPending: number; failed: number }) => {
+          console.log(`[WalletManager] Finalization progress: ${res.resolved} resolved, ${res.stillPending} pending, ${res.failed} failed`);
+        },
+      });
+      const fin = result.finalization ?? { resolved: 0, stillPending: 0, failed: 0 };
+      console.log(`[WalletManager] Finalization complete: ${fin.resolved} resolved, ${fin.stillPending} pending, ${fin.failed} failed`);
+      return { resolved: fin.resolved, pending: fin.stillPending, failed: fin.failed };
+    } catch (error) {
+      console.error('[WalletManager] Finalization error:', error);
+      return { resolved: 0, pending: 0, failed: 0 };
+    }
+  }
+
   // ============ Transfer Listener ============
 
   private setupTransferListener(): void {
@@ -853,6 +900,10 @@ export class WalletManager {
 
     this.sphere.on('transfer:incoming', (data: unknown) => {
       console.log('[WalletManager] Incoming transfer received:', JSON.stringify(data, null, 2));
+      // Trigger finalization for the newly received V5 token
+      this.finalizeTokens().catch((err) => {
+        console.error('[WalletManager] Background finalization failed:', err);
+      });
     });
 
     // Also listen for connection changes to detect transport drops

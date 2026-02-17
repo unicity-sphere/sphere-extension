@@ -31,6 +31,8 @@ export interface TokenBalance {
   symbol: string;
   /** Balance amount as string (to handle bigint) */
   amount: string;
+  /** Pending (unfinalized) amount, if any */
+  pendingAmount?: string;
 }
 
 // ============ Nametag Types ============
@@ -222,7 +224,8 @@ export type PopupMessageType =
   | 'POPUP_SEND_TOKENS'
   | 'POPUP_RESOLVE_NAMETAG'
   | 'POPUP_CHECK_TOKEN_HEALTH'
-  | 'POPUP_PURGE_INVALID_TOKENS';
+  | 'POPUP_PURGE_INVALID_TOKENS'
+  | 'POPUP_FINALIZE_TOKENS';
 
 // ============ Request/Response Types ============
 

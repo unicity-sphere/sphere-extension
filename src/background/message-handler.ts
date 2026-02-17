@@ -341,6 +341,11 @@ export async function handlePopupMessage(
         return { success: true, ...result };
       }
 
+      case 'POPUP_FINALIZE_TOKENS': {
+        const result = await walletManager.finalizeTokens();
+        return { success: true, ...result };
+      }
+
       default:
         return {
           success: false,
