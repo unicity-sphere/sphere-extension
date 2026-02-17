@@ -2,7 +2,7 @@
  * Hook for wallet operations - communicates with background service worker.
  */
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useStore } from '../store';
 import type {
   WalletState,
@@ -40,6 +40,17 @@ export function useWallet() {
     setLoading,
     setError,
   } = useStore();
+
+  // Listen for balance pushes from the background service worker
+  useEffect(() => {
+    const listener = (message: { type: string; balances?: TokenBalance[] }) => {
+      if (message.type === 'BALANCES_UPDATED' && message.balances) {
+        setBalances(message.balances);
+      }
+    };
+    chrome.runtime.onMessage.addListener(listener);
+    return () => chrome.runtime.onMessage.removeListener(listener);
+  }, [setBalances]);
 
   /**
    * Initialize popup - get current wallet state and navigate to appropriate view.

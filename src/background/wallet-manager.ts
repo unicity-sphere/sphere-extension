@@ -893,6 +893,19 @@ export class WalletManager {
     }
   }
 
+  /**
+   * Push current balances to any open popup/content script.
+   * Silently ignores errors (popup may not be open).
+   */
+  private broadcastBalances(): void {
+    try {
+      const balances = this.getBalances();
+      chrome.runtime.sendMessage({ type: 'BALANCES_UPDATED', balances }).catch(() => {});
+    } catch {
+      // Wallet may not be initialized yet
+    }
+  }
+
   // ============ Transfer Listener ============
 
   private setupTransferListener(): void {
@@ -900,8 +913,13 @@ export class WalletManager {
 
     this.sphere.on('transfer:incoming', (data: unknown) => {
       console.log('[WalletManager] Incoming transfer received:', JSON.stringify(data, null, 2));
+      // Push pending balance to popup immediately
+      this.broadcastBalances();
       // Trigger finalization for the newly received V5 token
-      this.finalizeTokens().catch((err) => {
+      this.finalizeTokens().then(() => {
+        // Push confirmed balance once finalization completes
+        this.broadcastBalances();
+      }).catch((err) => {
         console.error('[WalletManager] Background finalization failed:', err);
       });
     });
