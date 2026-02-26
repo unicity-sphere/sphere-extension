@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { TokenRegistry, NETWORKS } from '@unicitylabs/sphere-sdk';
 import { SphereContext, type SphereContextValue } from '@/sdk/context';
 import { SPHERE_KEYS } from '@/sdk/queryKeys';
 import type { WalletIdentity } from '@/sdk/types';
@@ -29,6 +30,14 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
   const [identity, setIdentity] = useState<WalletIdentity | null>(null);
   const [nametag, setNametag] = useState<string | null>(null);
   const updateCallbacksRef = useRef<Set<() => void>>(new Set());
+
+  // Configure TokenRegistry singleton for popup bundle (same as sphere web app)
+  useEffect(() => {
+    const netConfig = NETWORKS['testnet'];
+    TokenRegistry.configure({
+      remoteUrl: netConfig.tokenRegistryUrl,
+    });
+  }, []);
 
   // Fetch initial state
   useEffect(() => {
