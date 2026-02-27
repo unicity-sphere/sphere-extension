@@ -1,9 +1,12 @@
 import { Wallet, Clock, Bell, MoreVertical, Tag, Loader2, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { L3WalletView } from './L3WalletView';
 import { useIdentity, useWalletStatus, useSphereContext } from '@/sdk';
 import { AddressSelector, RegisterNametagModal } from '@/components/wallet/shared';
 import { CreateWalletFlow } from './onboarding/CreateWalletFlow';
+import { ConnectApprovalModal } from './modals/ConnectApprovalModal';
+import { ConnectIntentModal } from './modals/ConnectIntentModal';
+import { SendModal, type SendPrefill } from './modals/SendModal';
 
 const PANEL_SHELL = "bg-white dark:bg-neutral-900 backdrop-blur-xl rounded-none border-0 overflow-hidden h-full relative flex flex-col transition-all duration-500";
 
@@ -14,7 +17,78 @@ export function WalletPanel() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isL1WalletOpen, setIsL1WalletOpen] = useState(false);
   const [isNametagModalOpen, setIsNametagModalOpen] = useState(false);
+  const [isConnectApprovalOpen, setIsConnectApprovalOpen] = useState(false);
+  const [isConnectIntentOpen, setIsConnectIntentOpen] = useState(false);
+  // Send intent routed to the existing SendModal
+  const [isSendIntentOpen, setIsSendIntentOpen] = useState(false);
+  const [sendIntentPrefill, setSendIntentPrefill] = useState<SendPrefill | undefined>(undefined);
+  const [pendingSendIntentId, setPendingSendIntentId] = useState<string | null>(null);
   const { isLoading: isWalletLoading, walletExists, error: walletError } = useWalletStatus();
+
+  // Auto-open ConnectApprovalModal when background has a pending dApp approval
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const response = await chrome.runtime.sendMessage({ type: 'POPUP_GET_CONNECT_APPROVAL' });
+        if (response?.approval && !isConnectApprovalOpen) {
+          setIsConnectApprovalOpen(true);
+        }
+      } catch {
+        // Ignore — background may not be ready
+      }
+    };
+    const interval = setInterval(check, 500);
+    return () => clearInterval(interval);
+  }, [isConnectApprovalOpen]);
+
+  // Auto-open intent UI when background has a pending dApp intent.
+  // Routes 'send' to the existing SendModal (with prefill), other actions to ConnectIntentModal.
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const response = await chrome.runtime.sendMessage({ type: 'POPUP_GET_CONNECT_INTENT' });
+        const intent = response?.intent;
+        if (!intent || isConnectIntentOpen || isSendIntentOpen) return;
+
+        if (intent.action === 'send') {
+          setSendIntentPrefill({
+            to: String(intent.params.recipient ?? intent.params.to ?? ''),
+            amount: String(intent.params.amount ?? ''),
+            coinId: String(intent.params.coinId ?? ''),
+            memo: intent.params.memo ? String(intent.params.memo) : undefined,
+          });
+          setPendingSendIntentId(intent.id);
+          setIsSendIntentOpen(true);
+        } else {
+          setIsConnectIntentOpen(true);
+        }
+      } catch {
+        // Ignore — background may not be ready
+      }
+    };
+    const interval = setInterval(check, 500);
+    return () => clearInterval(interval);
+  }, [isConnectIntentOpen, isSendIntentOpen]);
+
+  // Resolve the pending send intent when SendModal closes
+  const handleSendIntentClose = async (result?: { success: boolean }) => {
+    setIsSendIntentOpen(false);
+    setSendIntentPrefill(undefined);
+    if (pendingSendIntentId) {
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'POPUP_RESOLVE_CONNECT_INTENT',
+          id: pendingSendIntentId,
+          result: result?.success
+            ? { result: { approved: true } }
+            : { error: { code: 4001, message: 'User rejected' } },
+        });
+      } catch {
+        // Ignore
+      }
+      setPendingSendIntentId(null);
+    }
+  };
   const { identity, nametag, isLoading: isLoadingIdentity } = useIdentity();
   const { isLoading: _contextLoading } = useSphereContext();
 
@@ -177,6 +251,23 @@ export function WalletPanel() {
       <RegisterNametagModal
         isOpen={isNametagModalOpen}
         onClose={() => setIsNametagModalOpen(false)}
+      />
+
+      <ConnectApprovalModal
+        isOpen={isConnectApprovalOpen}
+        onClose={() => setIsConnectApprovalOpen(false)}
+      />
+
+      <ConnectIntentModal
+        isOpen={isConnectIntentOpen}
+        onClose={() => setIsConnectIntentOpen(false)}
+      />
+
+      {/* Send intent from dApp — routed to the existing Confirm Transfer UI */}
+      <SendModal
+        isOpen={isSendIntentOpen}
+        onClose={handleSendIntentClose}
+        prefill={sendIntentPrefill}
       />
     </div>
   );

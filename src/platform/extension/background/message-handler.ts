@@ -9,6 +9,15 @@
  */
 
 import { walletManager } from './wallet-manager';
+import {
+  initConnectHost,
+  destroyConnectHost,
+  getConnectApproval,
+  resolveConnectApproval,
+  getConnectIntent,
+  resolveConnectIntent,
+} from './connect-host';
+import type { PermissionScope } from '@unicitylabs/sphere-sdk/connect';
 import { nametagMintService } from './nametag-mint-service';
 import {
   addPendingTransaction,
@@ -182,6 +191,7 @@ export async function handlePopupMessage(
       case 'POPUP_CREATE_WALLET': {
         const password = message.password as string;
         const { identity, mnemonic } = await walletManager.createWallet(password);
+        initConnectHost();
         return {
           success: true,
           identity,
@@ -194,6 +204,7 @@ export async function handlePopupMessage(
         const mnemonic = message.mnemonic as string;
         const password = message.password as string;
         const identity = await walletManager.importWallet(mnemonic, password);
+        initConnectHost();
         return {
           success: true,
           identity,
@@ -208,6 +219,9 @@ export async function handlePopupMessage(
         // Resolve any pending connect requests now that wallet is unlocked
         resolvePendingConnectRequests();
 
+        // (Re)initialize ConnectHost with the freshly unlocked sphere instance
+        initConnectHost();
+
         return {
           success: true,
           identity,
@@ -217,6 +231,8 @@ export async function handlePopupMessage(
 
       case 'POPUP_LOCK_WALLET':
         await walletManager.lock();
+        // Destroy ConnectHost — no sphere instance available while locked
+        destroyConnectHost();
         return {
           success: true,
           state: await walletManager.getState(),
@@ -369,6 +385,33 @@ export async function handlePopupMessage(
           success: true,
           identity: walletManager.getFullIdentity(),
         };
+
+      // --- Connect protocol: approval / intent ---
+
+      case 'POPUP_GET_CONNECT_APPROVAL':
+        return { success: true, approval: getConnectApproval() };
+
+      case 'POPUP_RESOLVE_CONNECT_APPROVAL': {
+        const { id, approved, grantedPermissions } = message as {
+          id: string;
+          approved: boolean;
+          grantedPermissions: string[];
+        };
+        const ok = resolveConnectApproval(id, approved, grantedPermissions as PermissionScope[]);
+        return { success: ok };
+      }
+
+      case 'POPUP_GET_CONNECT_INTENT':
+        return { success: true, intent: getConnectIntent() };
+
+      case 'POPUP_RESOLVE_CONNECT_INTENT': {
+        const { id, result } = message as {
+          id: string;
+          result: { result?: unknown; error?: { code: number; message: string } };
+        };
+        const ok = resolveConnectIntent(id, result);
+        return { success: ok };
+      }
 
       default:
         return {

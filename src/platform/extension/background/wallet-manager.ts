@@ -294,6 +294,11 @@ export class WalletManager {
     return this.sphere !== null;
   }
 
+  /** Returns the active Sphere instance or null when wallet is locked. */
+  getSphereInstance(): Sphere | null {
+    return this.sphere;
+  }
+
   private getSphere(): Sphere {
     if (!this.sphere) {
       throw new Error('Wallet is locked');

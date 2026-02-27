@@ -8,11 +8,26 @@
  */
 
 import { handleContentMessage, handlePopupMessage } from './message-handler';
+import { initConnectHost, destroyConnectHost, isConnectHostActive, openPopupForConnect } from './connect-host';
+import { isExtensionConnectEnvelope, EXT_MSG_TO_HOST } from '@unicitylabs/sphere-sdk/connect/browser';
 
 console.log('Sphere Wallet background service worker started');
 
 // Listen for messages from content scripts and popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // Intercept Connect protocol envelopes (sphere-connect-ext:tohost).
+  // Chrome calls ALL onMessage listeners, so ExtensionHostTransport will also
+  // receive this message when it's registered (wallet unlocked).
+  // Our job here: open the popup if the wallet is locked so the user can unlock first.
+  if (isExtensionConnectEnvelope(message) && message.type === EXT_MSG_TO_HOST) {
+    if (!isConnectHostActive()) {
+      // Wallet locked — open popup so user can unlock, then retry Connect
+      openPopupForConnect();
+    }
+    sendResponse({ handled: true });
+    return true;
+  }
+
   const { type } = message;
 
   if (!type) {
@@ -39,6 +54,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // Return true to indicate async response
   return true;
+});
+
+// Initialize ConnectHost if wallet is already unlocked on startup
+if (typeof chrome !== 'undefined' && chrome.runtime) {
+  initConnectHost();
+}
+
+// Re-initialize ConnectHost when wallet is unlocked/locked (triggered via message handler)
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type === 'INTERNAL_WALLET_UNLOCKED') {
+    initConnectHost();
+  } else if (message?.type === 'INTERNAL_WALLET_LOCKED') {
+    destroyConnectHost();
+  }
+  // Non-blocking — always return undefined (handled by primary listener above)
 });
 
 // Handle extension installation/update

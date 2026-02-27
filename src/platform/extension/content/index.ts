@@ -7,6 +7,7 @@
  */
 
 import { isSphereRequest, isSphereResponse } from '@/shared/messages';
+import { isExtensionConnectEnvelope, EXT_MSG_TO_HOST, EXT_MSG_TO_CLIENT } from '@unicitylabs/sphere-sdk/connect/browser';
 
 console.log('Sphere content script loaded');
 
@@ -20,6 +21,34 @@ function injectScript() {
 }
 
 injectScript();
+
+// ===========================================================================
+// Connect protocol relay (ExtensionTransport)
+// ===========================================================================
+
+// Forward sphere-connect-ext:tohost messages from dApp page → background
+window.addEventListener('message', (event) => {
+  if (event.source !== window) return;
+  if (!isExtensionConnectEnvelope(event.data)) return;
+  if (event.data.type !== EXT_MSG_TO_HOST) return;
+
+  // Fire-and-forget: background ConnectHost listens via chrome.runtime.onMessage
+  chrome.runtime.sendMessage(event.data).catch(() => {
+    // Background may not be ready yet — ignore
+  });
+});
+
+// Forward sphere-connect-ext:toclient messages from background → dApp page
+chrome.runtime.onMessage.addListener((message) => {
+  if (!isExtensionConnectEnvelope(message)) return;
+  if (message.type !== EXT_MSG_TO_CLIENT) return;
+  window.postMessage(message, '*');
+  // Return false: synchronous, no response needed
+});
+
+// ===========================================================================
+// Legacy SPHERE_* relay (existing custom protocol)
+// ===========================================================================
 
 // Listen for messages from the page (inject script)
 window.addEventListener('message', async (event) => {
