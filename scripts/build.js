@@ -7,7 +7,7 @@ import { build } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { copyFileSync, existsSync, mkdirSync, rmSync, readdirSync, renameSync, statSync } from 'fs';
+import { copyFileSync, existsSync, mkdirSync, rmSync, readdirSync, renameSync, statSync, readFileSync, writeFileSync } from 'fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
@@ -57,6 +57,14 @@ async function buildExtension() {
   console.log('Copying public assets...');
   copyDir(publicDir, distDir, ['popup.html']);
 
+  // Inject version from package.json into dist/manifest.json
+  const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'));
+  const manifestPath = resolve(distDir, 'manifest.json');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+  manifest.version = pkg.version;
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+  console.log(`manifest.json version set to ${pkg.version}`);
+
   // Move popup.html from dist/public to dist root
   const distPublicDir = resolve(distDir, 'public');
   if (existsSync(distPublicDir)) {
@@ -87,18 +95,17 @@ async function buildExtension() {
     resolve: {
       preserveSymlinks: true,
       alias: {
-        '@/background': resolve(root, 'src/background'),
-        '@/content': resolve(root, 'src/content'),
-        '@/inject': resolve(root, 'src/inject'),
-        '@/popup': resolve(root, 'src/popup'),
         '@/shared': resolve(root, 'src/shared'),
+        '@/sdk': resolve(root, 'src/sdk'),
+        '@/components': resolve(root, 'src/components'),
+        '@/platform': resolve(root, 'src/platform'),
       },
     },
     build: {
       outDir: resolve(root, 'dist'),
       emptyOutDir: false,
       lib: {
-        entry: resolve(root, 'src/background/index.ts'),
+        entry: resolve(root, 'src/platform/extension/background/index.ts'),
         name: 'background',
         formats: ['es'],
         fileName: () => 'background.js',
@@ -122,18 +129,17 @@ async function buildExtension() {
     resolve: {
       preserveSymlinks: true,
       alias: {
-        '@/background': resolve(root, 'src/background'),
-        '@/content': resolve(root, 'src/content'),
-        '@/inject': resolve(root, 'src/inject'),
-        '@/popup': resolve(root, 'src/popup'),
         '@/shared': resolve(root, 'src/shared'),
+        '@/sdk': resolve(root, 'src/sdk'),
+        '@/components': resolve(root, 'src/components'),
+        '@/platform': resolve(root, 'src/platform'),
       },
     },
     build: {
       outDir: resolve(root, 'dist'),
       emptyOutDir: false,
       lib: {
-        entry: resolve(root, 'src/content/index.ts'),
+        entry: resolve(root, 'src/platform/extension/content/index.ts'),
         name: 'content',
         formats: ['iife'],
         fileName: () => 'content.js',
@@ -157,18 +163,17 @@ async function buildExtension() {
     resolve: {
       preserveSymlinks: true,
       alias: {
-        '@/background': resolve(root, 'src/background'),
-        '@/content': resolve(root, 'src/content'),
-        '@/inject': resolve(root, 'src/inject'),
-        '@/popup': resolve(root, 'src/popup'),
         '@/shared': resolve(root, 'src/shared'),
+        '@/sdk': resolve(root, 'src/sdk'),
+        '@/components': resolve(root, 'src/components'),
+        '@/platform': resolve(root, 'src/platform'),
       },
     },
     build: {
       outDir: resolve(root, 'dist'),
       emptyOutDir: false,
       lib: {
-        entry: resolve(root, 'src/inject/index.ts'),
+        entry: resolve(root, 'src/platform/extension/inject/index.ts'),
         name: 'inject',
         formats: ['iife'],
         fileName: () => 'inject.js',

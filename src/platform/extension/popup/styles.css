@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    width: 375px;
+    height: 667px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: white;
+    color: #171717;
+  }
+
+  #root {
+    width: 375px;
+    height: 667px;
+    overflow: hidden;
+  }
+
+  /* Custom scrollbar — hidden by default, visible on hover */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 2px;
+  }
+  *:hover::-webkit-scrollbar-thumb {
+    background: #a3a3a3;
+  }
+}

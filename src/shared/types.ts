@@ -106,24 +106,6 @@ export interface SignNostrData {
   eventHash: string;
 }
 
-// ============ Token Health Types ============
-
-export interface TokenHealthInfo {
-  id: string;
-  coinId: string;
-  symbol: string;
-  amount: string;
-  status: string;
-  isValid: boolean;
-  reason?: string;
-}
-
-export interface TokenHealthResult {
-  total: number;
-  valid: number;
-  invalid: TokenHealthInfo[];
-}
-
 // ============ Storage Schema Types ============
 
 export interface StorageSchema {
@@ -173,8 +155,6 @@ export type SphereRequestType =
   | 'SPHERE_SIGN_MESSAGE'
   | 'SPHERE_GET_NOSTR_PUBLIC_KEY'
   | 'SPHERE_SIGN_NOSTR_EVENT'
-  | 'SPHERE_NIP44_ENCRYPT'
-  | 'SPHERE_NIP44_DECRYPT'
   | 'SPHERE_RESOLVE_NAMETAG'
   | 'SPHERE_MINT_NAMETAG'
   | 'SPHERE_GET_MY_NAMETAGS'
@@ -191,8 +171,6 @@ export type SphereResponseType =
   | 'SPHERE_SIGN_MESSAGE_RESPONSE'
   | 'SPHERE_GET_NOSTR_PUBLIC_KEY_RESPONSE'
   | 'SPHERE_SIGN_NOSTR_EVENT_RESPONSE'
-  | 'SPHERE_NIP44_ENCRYPT_RESPONSE'
-  | 'SPHERE_NIP44_DECRYPT_RESPONSE'
   | 'SPHERE_TRANSACTION_RESULT'
   | 'SPHERE_RESOLVE_NAMETAG_RESPONSE'
   | 'SPHERE_MINT_NAMETAG_RESPONSE'
@@ -223,9 +201,27 @@ export type PopupMessageType =
   | 'POPUP_SET_AGGREGATOR_CONFIG'
   | 'POPUP_SEND_TOKENS'
   | 'POPUP_RESOLVE_NAMETAG'
-  | 'POPUP_CHECK_TOKEN_HEALTH'
-  | 'POPUP_PURGE_INVALID_TOKENS'
-  | 'POPUP_FINALIZE_TOKENS';
+  | 'POPUP_FINALIZE_TOKENS'
+  | 'POPUP_GET_ASSETS'
+  | 'POPUP_GET_TOKENS'
+  | 'POPUP_GET_TRANSACTION_HISTORY'
+  | 'POPUP_GET_IDENTITY'
+  | 'POPUP_RESET_WALLET'
+  | 'POPUP_GET_PREFERENCES'
+  | 'POPUP_SAVE_PREFERENCES'
+  // Connect Protocol
+  | 'POPUP_GET_CONNECT_APPROVAL'
+  | 'POPUP_RESOLVE_CONNECT_APPROVAL'
+  | 'POPUP_GET_CONNECT_INTENT'
+  | 'POPUP_RESOLVE_CONNECT_INTENT'
+  | 'POPUP_GET_CONNECTED_SITES'
+  | 'POPUP_REVOKE_CONNECTED_SITE'
+  // Connect — Communications & L1
+  | 'POPUP_SEND_DM'
+  | 'POPUP_SEND_L1_TOKENS'
+  | 'POPUP_SEND_PAYMENT_REQUEST'
+  | 'POPUP_SIGN_MESSAGE_CONNECT'
+  | 'POPUP_SET_DM_AUTO_APPROVE';
 
 // ============ Request/Response Types ============
 
@@ -323,30 +319,6 @@ export interface SignNostrEventRequest extends BaseRequest {
 export interface SignNostrEventResponse extends BaseResponse {
   type: 'SPHERE_SIGN_NOSTR_EVENT_RESPONSE';
   signature?: string;
-}
-
-// NIP-44 Encrypt
-export interface Nip44EncryptRequest extends BaseRequest {
-  type: 'SPHERE_NIP44_ENCRYPT';
-  recipientPubkey: string;
-  plaintext: string;
-}
-
-export interface Nip44EncryptResponse extends BaseResponse {
-  type: 'SPHERE_NIP44_ENCRYPT_RESPONSE';
-  ciphertext?: string;
-}
-
-// NIP-44 Decrypt
-export interface Nip44DecryptRequest extends BaseRequest {
-  type: 'SPHERE_NIP44_DECRYPT';
-  senderPubkey: string;
-  ciphertext: string;
-}
-
-export interface Nip44DecryptResponse extends BaseResponse {
-  type: 'SPHERE_NIP44_DECRYPT_RESPONSE';
-  plaintext?: string;
 }
 
 // Transaction Result (pushed from background after approval)
@@ -494,8 +466,6 @@ export type SphereRequest =
   | SignMessageRequest
   | GetNostrPublicKeyRequest
   | SignNostrEventRequest
-  | Nip44EncryptRequest
-  | Nip44DecryptRequest
   | ResolveNametagRequest
   | CheckNametagAvailableRequest
   | MintNametagRequest
@@ -510,8 +480,6 @@ export type SphereResponse =
   | SignMessageResponse
   | GetNostrPublicKeyResponse
   | SignNostrEventResponse
-  | Nip44EncryptResponse
-  | Nip44DecryptResponse
   | TransactionResultMessage
   | ResolveNametagResponse
   | CheckNametagAvailableResponse
