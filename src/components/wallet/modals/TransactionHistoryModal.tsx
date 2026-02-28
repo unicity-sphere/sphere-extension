@@ -15,6 +15,7 @@ interface FormattedHistoryEntry extends TransactionHistoryEntry {
   }>;
   date: string;
   time: string;
+  iconUrl?: string | null;
 }
 
 /** Copy text to clipboard, return true on success */
@@ -98,6 +99,7 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
 
       return {
         ...entry,
+        iconUrl: registry.getIconUrl(entry.coinId),
         formattedAmount: formatRawAmount(entry.amount, decimals),
         formattedTokenIds: entry.tokenIds?.map((t) => ({
           ...t,

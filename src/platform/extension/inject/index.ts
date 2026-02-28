@@ -163,28 +163,6 @@ class SphereAPI {
   }
 
   /**
-   * NIP-44 encryption/decryption.
-   * Auto-approved for connected sites (no popup).
-   */
-  nip44 = {
-    encrypt: async (recipientPubkey: string, plaintext: string): Promise<string> => {
-      const response = await this.createRequest<{ ciphertext: string }>(
-        'SPHERE_NIP44_ENCRYPT',
-        { recipientPubkey, plaintext }
-      );
-      return response.ciphertext;
-    },
-
-    decrypt: async (senderPubkey: string, ciphertext: string): Promise<string> => {
-      const response = await this.createRequest<{ plaintext: string }>(
-        'SPHERE_NIP44_DECRYPT',
-        { senderPubkey, ciphertext }
-      );
-      return response.plaintext;
-    },
-  };
-
-  /**
    * Get the user's registered nametag, if any.
    */
   async getMyNametag(): Promise<{ name: string; proxyAddress: string } | null> {

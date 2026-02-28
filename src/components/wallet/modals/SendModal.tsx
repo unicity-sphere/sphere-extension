@@ -125,7 +125,7 @@ export function SendModal({ isOpen, onClose, prefill }: SendModalProps) {
           const peerInfo = await ctx.resolve(`@${cleanTag}`);
           if (peerInfo) {
             setRecipient(cleanTag);
-            setResolvedAddress(peerInfo.directAddress || null);
+            setResolvedAddress(peerInfo.proxyAddress || null);
             setStep('asset');
           } else {
             setRecipientError(`User @${cleanTag} not found`);

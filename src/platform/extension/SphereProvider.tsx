@@ -4,9 +4,10 @@ import { TokenRegistry, NETWORKS } from '@unicitylabs/sphere-sdk';
 import { SphereContext, type SphereContextValue } from '@/sdk/context';
 import { SPHERE_KEYS } from '@/sdk/queryKeys';
 import type { WalletIdentity } from '@/sdk/types';
-import type { AggregatorConfig } from '@/shared/types';
+import type { Asset, Token, TransactionHistoryEntry } from '@unicitylabs/sphere-sdk';
+import type { AggregatorConfig, NametagInfo, NametagResolution, PendingTransaction } from '@/shared/types';
 
-async function sendMessage(message: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function sendMessage<T = Record<string, unknown>>(message: Record<string, unknown>): Promise<T> {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(message, (response) => {
       if (chrome.runtime.lastError) {
@@ -17,7 +18,7 @@ async function sendMessage(message: Record<string, unknown>): Promise<Record<str
         reject(new Error(response.error || 'Unknown error'));
         return;
       }
-      resolve(response);
+      resolve(response as T);
     });
   });
 }
@@ -44,14 +45,14 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
   useEffect(() => {
     (async () => {
       try {
-        const res = await sendMessage({ type: 'POPUP_GET_STATE' });
+        const res = await sendMessage<{ state: { hasWallet: boolean; isUnlocked: boolean } }>({ type: 'POPUP_GET_STATE' });
         setWalletExists(res.state.hasWallet);
         setIsUnlocked(res.state.isUnlocked);
 
         if (res.state.isUnlocked) {
           try {
-            const idRes = await sendMessage({ type: 'POPUP_GET_IDENTITIES' });
-            const ntRes = await sendMessage({ type: 'POPUP_GET_MY_NAMETAG' });
+            const idRes = await sendMessage<{ identities?: Array<{ publicKey: string; id: string; label?: string }> }>({ type: 'POPUP_GET_IDENTITIES' });
+            const ntRes = await sendMessage<{ nametag?: { nametag: string } }>({ type: 'POPUP_GET_MY_NAMETAG' });
 
             // Resolve nametag: prefer stored nametag, fall back to identity label
             const storedNametag = ntRes.nametag?.nametag ?? null;
@@ -98,8 +99,10 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [queryClient]);
 
+  type IdentityPayload = { publicKey: string; id: string; label?: string };
+
   const createWallet = useCallback(async (password: string) => {
-    const res = await sendMessage({ type: 'POPUP_CREATE_WALLET', password });
+    const res = await sendMessage<{ identity?: IdentityPayload; mnemonic: string }>({ type: 'POPUP_CREATE_WALLET', password });
     setWalletExists(true);
     setIsUnlocked(true);
     if (res.identity) {
@@ -113,7 +116,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
   }, []);
 
   const importWallet = useCallback(async (mnemonic: string, password: string) => {
-    const res = await sendMessage({ type: 'POPUP_IMPORT_WALLET', mnemonic, password });
+    const res = await sendMessage<{ identity?: IdentityPayload }>({ type: 'POPUP_IMPORT_WALLET', mnemonic, password });
     setWalletExists(true);
     setIsUnlocked(true);
     if (res.identity) {
@@ -126,7 +129,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
   }, []);
 
   const unlockWallet = useCallback(async (password: string) => {
-    const res = await sendMessage({ type: 'POPUP_UNLOCK_WALLET', password });
+    const res = await sendMessage<{ identity?: IdentityPayload }>({ type: 'POPUP_UNLOCK_WALLET', password });
     setIsUnlocked(true);
     if (res.identity) {
       setIdentity({
@@ -138,7 +141,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
     }
     // Fetch nametag
     try {
-      const ntRes = await sendMessage({ type: 'POPUP_GET_MY_NAMETAG' });
+      const ntRes = await sendMessage<{ nametag?: { nametag: string } }>({ type: 'POPUP_GET_MY_NAMETAG' });
       if (ntRes.nametag) setNametag(ntRes.nametag.nametag);
     } catch { /* non-fatal — nametag fetch failed, continue without it */ }
   }, []);
@@ -161,36 +164,36 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
   }, [queryClient]);
 
   const getAssets = useCallback(async () => {
-    const res = await sendMessage({ type: 'POPUP_GET_ASSETS' });
+    const res = await sendMessage<{ assets?: Asset[] }>({ type: 'POPUP_GET_ASSETS' });
     return res.assets ?? [];
   }, []);
 
   const getTokens = useCallback(async () => {
-    const res = await sendMessage({ type: 'POPUP_GET_TOKENS' });
+    const res = await sendMessage<{ tokens?: Token[] }>({ type: 'POPUP_GET_TOKENS' });
     return res.tokens ?? [];
   }, []);
 
   const getTransactionHistory = useCallback(async () => {
-    const res = await sendMessage({ type: 'POPUP_GET_TRANSACTION_HISTORY' });
+    const res = await sendMessage<{ history?: TransactionHistoryEntry[] }>({ type: 'POPUP_GET_TRANSACTION_HISTORY' });
     return res.history ?? [];
   }, []);
 
   const getIdentity = useCallback(async () => {
-    const res = await sendMessage({ type: 'POPUP_GET_IDENTITY' });
+    const res = await sendMessage<{ identity?: WalletIdentity | null }>({ type: 'POPUP_GET_IDENTITY' });
     return res.identity ?? null;
   }, []);
 
   const send = useCallback(async (params: { coinId: string; amount: string; recipient: string; memo?: string }) => {
-    return sendMessage({ type: 'POPUP_SEND_TOKENS', ...params });
+    return sendMessage<{ transactionId?: string }>({ type: 'POPUP_SEND_TOKENS', ...params });
   }, []);
 
   const resolve = useCallback(async (recipient: string) => {
-    const res = await sendMessage({ type: 'POPUP_RESOLVE_NAMETAG', nametag: recipient });
+    const res = await sendMessage<{ resolution?: NametagResolution | null }>({ type: 'POPUP_RESOLVE_NAMETAG', nametag: recipient });
     return res.resolution ?? null;
   }, []);
 
   const registerNametag = useCallback(async (tag: string) => {
-    const res = await sendMessage({ type: 'POPUP_REGISTER_NAMETAG', nametag: tag });
+    const res = await sendMessage<{ nametag?: NametagInfo }>({ type: 'POPUP_REGISTER_NAMETAG', nametag: tag });
     const cleanTag = tag.replace('@', '').trim().toLowerCase();
     if (res.nametag) {
       setNametag(res.nametag.nametag);
@@ -201,31 +204,31 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
     }
     // Also update identity with the nametag so useIdentity picks it up
     setIdentity(prev => prev ? { ...prev, nametag: cleanTag } : prev);
-    return res.nametag;
+    return res.nametag as NametagInfo;
   }, []);
 
   const isNametagAvailable = useCallback(async (tag: string) => {
-    const res = await sendMessage({ type: 'POPUP_CHECK_NAMETAG_AVAILABLE', nametag: tag });
+    const res = await sendMessage<{ available?: boolean }>({ type: 'POPUP_CHECK_NAMETAG_AVAILABLE', nametag: tag });
     return res.available ?? false;
   }, []);
 
   const getMyNametag = useCallback(async () => {
-    const res = await sendMessage({ type: 'POPUP_GET_MY_NAMETAG' });
+    const res = await sendMessage<{ nametag?: NametagInfo | null }>({ type: 'POPUP_GET_MY_NAMETAG' });
     return res.nametag ?? null;
   }, []);
 
   const getMnemonic = useCallback(async () => {
-    const res = await sendMessage({ type: 'POPUP_GET_MNEMONIC' });
+    const res = await sendMessage<{ mnemonic?: string | null }>({ type: 'POPUP_GET_MNEMONIC' });
     return res.mnemonic ?? null;
   }, []);
 
   const exportWallet = useCallback(async () => {
-    const res = await sendMessage({ type: 'POPUP_EXPORT_WALLET' });
+    const res = await sendMessage<{ walletJson?: string }>({ type: 'POPUP_EXPORT_WALLET' });
     return res.walletJson ?? '';
   }, []);
 
   const getPendingTransactions = useCallback(async () => {
-    const res = await sendMessage({ type: 'POPUP_GET_PENDING_TRANSACTIONS' });
+    const res = await sendMessage<{ transactions?: PendingTransaction[] }>({ type: 'POPUP_GET_PENDING_TRANSACTIONS' });
     return res.transactions ?? [];
   }, []);
 
@@ -238,7 +241,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
   }, []);
 
   const getAggregatorConfig = useCallback(async () => {
-    const res = await sendMessage({ type: 'POPUP_GET_AGGREGATOR_CONFIG' });
+    const res = await sendMessage<{ config: AggregatorConfig }>({ type: 'POPUP_GET_AGGREGATOR_CONFIG' });
     return res.config;
   }, []);
 

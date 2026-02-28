@@ -133,20 +133,6 @@ export async function handleContentMessage(
           message.eventHash as string
         );
 
-      case 'SPHERE_NIP44_ENCRYPT':
-        return handleNip44Encrypt(
-          origin,
-          message.recipientPubkey as string,
-          message.plaintext as string
-        );
-
-      case 'SPHERE_NIP44_DECRYPT':
-        return handleNip44Decrypt(
-          origin,
-          message.senderPubkey as string,
-          message.ciphertext as string
-        );
-
       case 'SPHERE_RESOLVE_NAMETAG':
         return handleResolveNametag(origin, message.nametag as string);
 
@@ -348,16 +334,6 @@ export async function handlePopupMessage(
       case 'POPUP_RESOLVE_NAMETAG': {
         const nametag = message.nametag as string;
         return handlePopupResolveNametag(nametag);
-      }
-
-      case 'POPUP_CHECK_TOKEN_HEALTH': {
-        const result = await walletManager.checkTokenHealth();
-        return { success: true, ...result };
-      }
-
-      case 'POPUP_PURGE_INVALID_TOKENS': {
-        const result = await walletManager.purgeInvalidTokens();
-        return { success: true, ...result };
       }
 
       case 'POPUP_FINALIZE_TOKENS': {
@@ -715,89 +691,6 @@ async function handleGetNostrPublicKey(origin: string): Promise<{
   };
 }
 
-async function handleNip44Encrypt(
-  origin: string,
-  recipientPubkey: string,
-  plaintext: string
-): Promise<{
-  type: string;
-  success: boolean;
-  ciphertext?: string;
-  error?: string;
-}> {
-  if (!connectedSites.has(origin)) {
-    return {
-      type: 'SPHERE_NIP44_ENCRYPT_RESPONSE',
-      success: false,
-      error: 'Not connected. Call connect() first.',
-    };
-  }
-
-  if (!walletManager.isUnlocked()) {
-    return {
-      type: 'SPHERE_NIP44_ENCRYPT_RESPONSE',
-      success: false,
-      error: 'Wallet is locked.',
-    };
-  }
-
-  try {
-    const ciphertext = walletManager.nip44Encrypt(recipientPubkey, plaintext);
-    return {
-      type: 'SPHERE_NIP44_ENCRYPT_RESPONSE',
-      success: true,
-      ciphertext,
-    };
-  } catch (error) {
-    return {
-      type: 'SPHERE_NIP44_ENCRYPT_RESPONSE',
-      success: false,
-      error: (error as Error).message,
-    };
-  }
-}
-
-async function handleNip44Decrypt(
-  origin: string,
-  senderPubkey: string,
-  ciphertext: string
-): Promise<{
-  type: string;
-  success: boolean;
-  plaintext?: string;
-  error?: string;
-}> {
-  if (!connectedSites.has(origin)) {
-    return {
-      type: 'SPHERE_NIP44_DECRYPT_RESPONSE',
-      success: false,
-      error: 'Not connected. Call connect() first.',
-    };
-  }
-
-  if (!walletManager.isUnlocked()) {
-    return {
-      type: 'SPHERE_NIP44_DECRYPT_RESPONSE',
-      success: false,
-      error: 'Wallet is locked.',
-    };
-  }
-
-  try {
-    const plaintext = walletManager.nip44Decrypt(senderPubkey, ciphertext);
-    return {
-      type: 'SPHERE_NIP44_DECRYPT_RESPONSE',
-      success: true,
-      plaintext,
-    };
-  } catch (error) {
-    return {
-      type: 'SPHERE_NIP44_DECRYPT_RESPONSE',
-      success: false,
-      error: (error as Error).message,
-    };
-  }
-}
 
 async function handleSignNostrEventRequest(
   _requestId: string,
