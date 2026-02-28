@@ -214,6 +214,31 @@ export function initConnectHost(): void {
   });
 }
 
+/**
+ * Register a DM auto-approve handler on the active ConnectHost.
+ * After the user checks "Allow this dApp to send DMs without confirmation",
+ * subsequent dm intents are executed silently without opening the popup.
+ */
+export function setDmAutoApprove(): void {
+  if (!connectHost) return;
+  connectHost.setIntentAutoApprove('dm', async (_action, params) => {
+    try {
+      const dm = await walletManager.sendDM(
+        params.to as string,
+        params.message as string,
+      );
+      return { result: { sent: true, messageId: dm.id, timestamp: dm.timestamp } };
+    } catch (err) {
+      return {
+        error: {
+          code: 5000,
+          message: err instanceof Error ? err.message : 'DM failed',
+        },
+      };
+    }
+  });
+}
+
 /** Destroy the active ConnectHost and clear pending queues. */
 export function destroyConnectHost(): void {
   if (connectHost) {

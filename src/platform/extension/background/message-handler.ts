@@ -18,6 +18,7 @@ import {
   resolveConnectIntent,
   getConnectedSites,
   revokeConnectedSite,
+  setDmAutoApprove,
 } from './connect-host';
 import type { PermissionScope } from '@unicitylabs/sphere-sdk/connect';
 import { nametagMintService } from './nametag-mint-service';
@@ -422,6 +423,40 @@ export async function handlePopupMessage(
         };
         const ok = resolveConnectIntent(id, result);
         return { success: ok };
+      }
+
+      case 'POPUP_SEND_DM': {
+        const { recipient, content } = message as { recipient: string; content: string };
+        const dm = await walletManager.sendDM(recipient, content);
+        return { success: true, id: dm.id, timestamp: dm.timestamp };
+      }
+
+      case 'POPUP_SEND_L1_TOKENS': {
+        const { to, amountSatoshis } = message as { to: string; amountSatoshis: string };
+        const result = await walletManager.sendL1Tokens(to, amountSatoshis);
+        return result;
+      }
+
+      case 'POPUP_SEND_PAYMENT_REQUEST': {
+        const { recipient, amount, coinId, message: msg } = message as {
+          recipient: string;
+          amount: string;
+          coinId: string;
+          message?: string;
+        };
+        const result = await walletManager.sendPaymentRequest(recipient, { amount, coinId, message: msg });
+        return result;
+      }
+
+      case 'POPUP_SET_DM_AUTO_APPROVE': {
+        setDmAutoApprove();
+        return { success: true };
+      }
+
+      case 'POPUP_SIGN_MESSAGE_CONNECT': {
+        const { message: msgToSign } = message as { message: string };
+        const signature = walletManager.signMessageWithIdentity(msgToSign);
+        return { success: true, signature };
       }
 
       default:

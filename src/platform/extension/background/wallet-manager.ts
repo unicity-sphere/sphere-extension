@@ -13,10 +13,9 @@
 
 import { Sphere } from '@unicitylabs/sphere-sdk';
 import { NIP44 } from '@unicitylabs/nostr-js-sdk';
-import {
-  createBrowserProviders,
-  type BrowserProviders,
-} from '@unicitylabs/sphere-sdk/impl/browser';
+import { createBrowserProviders } from '@unicitylabs/sphere-sdk/impl/browser';
+
+type BrowserProviders = ReturnType<typeof createBrowserProviders>;
 import type {
   IdentityInfo,
   TokenBalance,
@@ -616,6 +615,31 @@ export class WalletManager {
     const sphere = this.getSphere();
     const keyPair = deriveNostrKeyPair(sphere);
     return signMessage(keyPair.privateKey, message);
+  }
+
+  // ============ Communications (DM + Payment Requests) ============
+
+  async sendDM(recipient: string, content: string): Promise<{ id: string; timestamp: number }> {
+    const sphere = this.getSphere();
+    const dm = await sphere.communications.sendDM(recipient, content);
+    return { id: dm.id, timestamp: dm.timestamp };
+  }
+
+  async sendPaymentRequest(
+    recipient: string,
+    options: { amount: string; coinId: string; message?: string },
+  ): Promise<{ success: boolean; requestId?: string; error?: string }> {
+    const sphere = this.getSphere();
+    return sphere.payments.sendPaymentRequest(recipient, options);
+  }
+
+  // ============ L1 Payments ============
+
+  async sendL1Tokens(to: string, amountSatoshis: string): Promise<{ success: boolean; txHash?: string; error?: string }> {
+    const sphere = this.getSphere();
+    if (!sphere.payments.l1) throw new Error('L1 payments not available');
+    const result = await sphere.payments.l1.send({ to, amount: amountSatoshis });
+    return result;
   }
 
   // ============ Export ============

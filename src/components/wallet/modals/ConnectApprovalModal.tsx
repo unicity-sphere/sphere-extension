@@ -1,17 +1,20 @@
 /**
  * ConnectApprovalModal — shown when a dApp requests connection via Connect protocol.
  *
- * Polls background for pending approval, shows dApp info + permissions,
+ * Polls background for pending approval, shows dApp info + per-permission checkboxes,
  * and resolves via POPUP_RESOLVE_CONNECT_APPROVAL message.
+ * identity:read is always granted and cannot be unchecked (mirrors sphere behaviour).
  */
 
 import { useEffect, useState } from 'react';
-import { Globe, Shield, CheckCircle2 } from 'lucide-react';
+import { Globe, Shield } from 'lucide-react';
+import { PERMISSION_SCOPES } from '@unicitylabs/sphere-sdk/connect';
+import type { PermissionScope } from '@unicitylabs/sphere-sdk/connect';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { ModalHeader } from '@/components/ui/ModalHeader';
 import { Button } from '@/components/ui/Button';
+import { POPUP_MESSAGES } from '@/shared/messages';
 
-// Mirrors the server-side PendingConnectApproval (without resolve fn)
 interface PendingApproval {
   id: string;
   dapp: {
@@ -20,7 +23,7 @@ interface PendingApproval {
     icon?: string;
     url: string;
   };
-  requestedPermissions: string[];
+  requestedPermissions: PermissionScope[];
 }
 
 interface ConnectApprovalModalProps {
@@ -29,21 +32,24 @@ interface ConnectApprovalModalProps {
 }
 
 const PERMISSION_LABELS: Record<string, string> = {
-  'identity:read': 'Read wallet identity',
-  'balance:read': 'View balances',
-  'assets:read': 'View assets',
-  'history:read': 'View transaction history',
-  'intent:send': 'Request token transfers',
-  'intent:l1_send': 'Request L1 transfers',
-  'intent:sign_message': 'Request message signing',
-  'intent:dm': 'Send direct messages',
-  'intent:payment_request': 'Create payment requests',
-  'intent:receive': 'Receive tokens',
-  'events:subscribe': 'Listen to wallet events',
+  [PERMISSION_SCOPES.IDENTITY_READ]: 'View wallet identity',
+  [PERMISSION_SCOPES.BALANCE_READ]: 'View balances',
+  [PERMISSION_SCOPES.TOKENS_READ]: 'View tokens',
+  [PERMISSION_SCOPES.HISTORY_READ]: 'View transaction history',
+  [PERMISSION_SCOPES.L1_READ]: 'View L1 data',
+  [PERMISSION_SCOPES.EVENTS_SUBSCRIBE]: 'Subscribe to wallet events',
+  [PERMISSION_SCOPES.RESOLVE_PEER]: 'Resolve addresses',
+  [PERMISSION_SCOPES.TRANSFER_REQUEST]: 'Request token transfers',
+  [PERMISSION_SCOPES.L1_TRANSFER]: 'Request L1 transfers',
+  [PERMISSION_SCOPES.DM_REQUEST]: 'Send direct messages',
+  [PERMISSION_SCOPES.DM_READ]: 'Read direct messages',
+  [PERMISSION_SCOPES.PAYMENT_REQUEST]: 'Create payment requests',
+  [PERMISSION_SCOPES.SIGN_REQUEST]: 'Sign messages',
 };
 
 export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalProps) {
   const [approval, setApproval] = useState<PendingApproval | null>(null);
+  const [selected, setSelected] = useState<Set<PermissionScope>>(new Set());
   const [loading, setLoading] = useState(false);
 
   // Poll for pending approval when modal is open
@@ -52,14 +58,23 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
 
     const poll = async () => {
       try {
-        const response = await chrome.runtime.sendMessage({ type: 'POPUP_GET_CONNECT_APPROVAL' });
+        const response = await chrome.runtime.sendMessage({ type: POPUP_MESSAGES.GET_CONNECT_APPROVAL });
         if (response?.approval) {
-          setApproval(response.approval);
+          const incoming = response.approval as PendingApproval;
+          setApproval(incoming);
+          // Initialise selected set: all requested + identity:read always included
+          setSelected((prev) => {
+            if (prev.size > 0) return prev; // already initialised for this approval
+            const initial = new Set(incoming.requestedPermissions);
+            initial.add(PERMISSION_SCOPES.IDENTITY_READ as PermissionScope);
+            return initial;
+          });
         } else {
           setApproval(null);
+          setSelected(new Set());
         }
       } catch {
-        // Background may not be ready
+        // Background may not be ready yet
       }
     };
 
@@ -68,16 +83,30 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
     return () => clearInterval(interval);
   }, [isOpen]);
 
+  const togglePermission = (perm: PermissionScope) => {
+    if (perm === PERMISSION_SCOPES.IDENTITY_READ) return; // always granted
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(perm)) {
+        next.delete(perm);
+      } else {
+        next.add(perm);
+      }
+      return next;
+    });
+  };
+
   const handleApprove = async () => {
     if (!approval) return;
     setLoading(true);
     try {
       await chrome.runtime.sendMessage({
-        type: 'POPUP_RESOLVE_CONNECT_APPROVAL',
+        type: POPUP_MESSAGES.RESOLVE_CONNECT_APPROVAL,
         id: approval.id,
         approved: true,
-        grantedPermissions: approval.requestedPermissions,
+        grantedPermissions: [...selected],
       });
+      setSelected(new Set());
       onClose();
     } catch (err) {
       console.error('[ConnectApprovalModal] approve error:', err);
@@ -91,11 +120,12 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
     setLoading(true);
     try {
       await chrome.runtime.sendMessage({
-        type: 'POPUP_RESOLVE_CONNECT_APPROVAL',
+        type: POPUP_MESSAGES.RESOLVE_CONNECT_APPROVAL,
         id: approval.id,
         approved: false,
         grantedPermissions: [],
       });
+      setSelected(new Set());
       onClose();
     } catch (err) {
       console.error('[ConnectApprovalModal] reject error:', err);
@@ -109,8 +139,8 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
   const { dapp, requestedPermissions } = approval;
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} size="sm">
-      <ModalHeader title="Connect Request" onClose={onClose} />
+    <BaseModal isOpen={isOpen} onClose={handleReject} size="sm">
+      <ModalHeader title="Connect Request" onClose={handleReject} />
 
       <div className="p-4 space-y-4 overflow-y-auto">
         {/* dApp identity */}
@@ -131,22 +161,39 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
           </div>
         </div>
 
-        {/* Permissions list */}
+        {/* Permissions list with checkboxes */}
         <div>
           <div className="flex items-center gap-1.5 mb-2">
             <Shield size={14} className="text-neutral-400" />
             <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
-              Requested permissions
+              Permissions
             </span>
           </div>
-          <ul className="space-y-1.5">
-            {requestedPermissions.map((perm) => (
-              <li key={perm} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-                <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-                <span>{PERMISSION_LABELS[perm] ?? perm}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="space-y-1">
+            {requestedPermissions.map((perm) => {
+              const isIdentity = perm === PERMISSION_SCOPES.IDENTITY_READ;
+              return (
+                <label
+                  key={perm}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/30 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected.has(perm)}
+                    onChange={() => togglePermission(perm)}
+                    disabled={isIdentity}
+                    className="w-4 h-4 rounded accent-orange-500 shrink-0"
+                  />
+                  <span className={`text-sm ${isIdentity ? 'text-neutral-400 dark:text-neutral-500' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                    {PERMISSION_LABELS[perm] ?? perm}
+                  </span>
+                  {isIdentity && (
+                    <span className="text-xs text-neutral-400 ml-auto whitespace-nowrap">Always granted</span>
+                  )}
+                </label>
+              );
+            })}
+          </div>
         </div>
       </div>
 

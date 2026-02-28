@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Globe, Trash2, Loader2, Link } from 'lucide-react';
 import { BaseModal, ModalHeader, EmptyState } from '@/components/ui';
 import type { ApprovedOriginEntry } from '@/platform/extension/background/connect-host';
+import { POPUP_MESSAGES } from '@/shared/messages';
 
 interface ConnectedSitesModalProps {
   isOpen: boolean;
@@ -39,7 +40,7 @@ export function ConnectedSitesModal({ isOpen, onClose }: ConnectedSitesModalProp
   const loadSites = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await chrome.runtime.sendMessage({ type: 'POPUP_GET_CONNECTED_SITES' });
+      const response = await chrome.runtime.sendMessage({ type: POPUP_MESSAGES.GET_CONNECTED_SITES });
       if (response?.success && response.sites) {
         const entries = Object.entries(response.sites as Record<string, ApprovedOriginEntry>)
           .map(([origin, data]) => ({ origin, data }))
@@ -62,7 +63,7 @@ export function ConnectedSitesModal({ isOpen, onClose }: ConnectedSitesModalProp
   const handleRevoke = useCallback(async (origin: string) => {
     setRevokingOrigin(origin);
     try {
-      await chrome.runtime.sendMessage({ type: 'POPUP_REVOKE_CONNECTED_SITE', origin });
+      await chrome.runtime.sendMessage({ type: POPUP_MESSAGES.REVOKE_CONNECTED_SITE, origin });
       setSites((prev) => prev.filter((s) => s.origin !== origin));
     } catch {
       // ignore
