@@ -182,12 +182,7 @@ export function WalletPanel() {
       <div className="p-3 sm:p-4 pb-2 relative shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-lg sm:rounded-xl blur-lg opacity-50 bg-orange-500" />
-              <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-linear-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-xl">
-                <UnionIcon size={18} className="shrink-0" />
-              </div>
-            </div>
+            <UnionIcon size={36} className="shrink-0" />
 
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
