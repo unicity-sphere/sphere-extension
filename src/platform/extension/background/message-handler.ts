@@ -16,6 +16,8 @@ import {
   resolveConnectApproval,
   getConnectIntent,
   resolveConnectIntent,
+  getConnectedSites,
+  revokeConnectedSite,
 } from './connect-host';
 import type { PermissionScope } from '@unicitylabs/sphere-sdk/connect';
 import { nametagMintService } from './nametag-mint-service';
@@ -403,6 +405,15 @@ export async function handlePopupMessage(
 
       case 'POPUP_GET_CONNECT_INTENT':
         return { success: true, intent: getConnectIntent() };
+
+      case 'POPUP_GET_CONNECTED_SITES':
+        return { success: true, sites: await getConnectedSites() };
+
+      case 'POPUP_REVOKE_CONNECTED_SITE': {
+        const { origin } = message as { origin: string };
+        await revokeConnectedSite(origin);
+        return { success: true };
+      }
 
       case 'POPUP_RESOLVE_CONNECT_INTENT': {
         const { id, result } = message as {

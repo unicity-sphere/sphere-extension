@@ -15,6 +15,46 @@ import type { PermissionScope } from '@unicitylabs/sphere-sdk/connect';
 import { walletManager } from './wallet-manager';
 
 // =============================================================================
+// Persistent approved origins stored in chrome.storage.local
+// =============================================================================
+
+const APPROVED_ORIGINS_KEY = 'sphere_approved_origins';
+
+export interface ApprovedOriginEntry {
+  permissions: PermissionScope[];
+  connectedAt: number;
+  lastSeenAt: number;
+  dapp: DAppMetadata;
+}
+
+async function getApprovedOrigins(): Promise<Record<string, ApprovedOriginEntry>> {
+  const result = await chrome.storage.local.get(APPROVED_ORIGINS_KEY);
+  return (result[APPROVED_ORIGINS_KEY] as Record<string, ApprovedOriginEntry>) ?? {};
+}
+
+async function saveApprovedOrigin(
+  origin: string,
+  dapp: DAppMetadata,
+  permissions: PermissionScope[],
+): Promise<void> {
+  const current = await getApprovedOrigins();
+  current[origin] = { permissions, connectedAt: Date.now(), lastSeenAt: Date.now(), dapp };
+  await chrome.storage.local.set({ [APPROVED_ORIGINS_KEY]: current });
+}
+
+/** Returns all approved sites (for settings UI). */
+export async function getConnectedSites(): Promise<Record<string, ApprovedOriginEntry>> {
+  return getApprovedOrigins();
+}
+
+/** Revoke a previously approved site (from settings UI). */
+export async function revokeConnectedSite(origin: string): Promise<void> {
+  const current = await getApprovedOrigins();
+  delete current[origin];
+  await chrome.storage.local.set({ [APPROVED_ORIGINS_KEY]: current });
+}
+
+// =============================================================================
 // Pending approval / intent types (shared with popup via POPUP_* messages)
 // =============================================================================
 
@@ -86,8 +126,28 @@ export function initConnectHost(): void {
     sphere,
     transport,
 
-    onConnectionRequest: async (dapp, requestedPermissions) => {
-      // Open popup to show ConnectApprovalModal
+    onConnectionRequest: async (dapp, requestedPermissions, silent) => {
+      // If this origin was previously approved, restore silently without any UI.
+      try {
+        const origin = new URL(dapp.url).origin;
+        const approved = await getApprovedOrigins();
+        if (approved[origin]) {
+          // Update lastSeenAt so UI shows recent activity
+          approved[origin].lastSeenAt = Date.now();
+          await chrome.storage.local.set({ [APPROVED_ORIGINS_KEY]: approved });
+          return { approved: true, grantedPermissions: approved[origin].permissions };
+        }
+      } catch {
+        // Invalid URL — fall through
+      }
+
+      // Silent mode (auto-connect on page load): reject immediately without opening any UI.
+      // This prevents popup windows from appearing when the origin is no longer approved.
+      if (silent) {
+        return { approved: false, grantedPermissions: [] };
+      }
+
+      // First-time connection — open popup to show ConnectApprovalModal
       await openPopupForConnect();
 
       return new Promise<{ approved: boolean; grantedPermissions: PermissionScope[] }>((resolve) => {
@@ -95,7 +155,18 @@ export function initConnectHost(): void {
           id: crypto.randomUUID(),
           dapp,
           requestedPermissions,
-          resolve,
+          resolve: (result) => {
+            // Persist approval so subsequent connects skip the popup
+            if (result.approved) {
+              try {
+                const origin = new URL(dapp.url).origin;
+                saveApprovedOrigin(origin, dapp, result.grantedPermissions).catch(console.error);
+              } catch {
+                // ignore
+              }
+            }
+            resolve(result);
+          },
         };
 
         // Timeout: reject after 2 minutes if user doesn't respond
@@ -106,6 +177,16 @@ export function initConnectHost(): void {
           }
         }, 120_000);
       });
+    },
+
+    onDisconnect: async (session) => {
+      // dApp explicitly disconnected — remove from approved origins
+      try {
+        const origin = new URL(session.dapp.url).origin;
+        await revokeConnectedSite(origin);
+      } catch {
+        // ignore
+      }
     },
 
     onIntent: async (action, params, session) => {
