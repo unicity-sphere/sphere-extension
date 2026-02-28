@@ -1,5 +1,7 @@
 import { createContext, useContext } from 'react';
+import type { Asset, Token, TransactionHistoryEntry } from '@unicitylabs/sphere-sdk';
 import type { WalletIdentity } from './types';
+import type { NametagInfo, NametagResolution, PendingTransaction, AggregatorConfig } from '@/shared/types';
 
 export interface SphereContextValue {
   // State
@@ -20,32 +22,32 @@ export interface SphereContextValue {
   deleteWallet: () => Promise<void>;
 
   // Data fetching (returns raw data, caching handled by React Query in hooks)
-  getAssets: () => Promise<any[]>;
-  getTokens: () => Promise<any[]>;
-  getTransactionHistory: () => Promise<any[]>;
+  getAssets: () => Promise<Asset[]>;
+  getTokens: () => Promise<Token[]>;
+  getTransactionHistory: () => Promise<TransactionHistoryEntry[]>;
   getIdentity: () => Promise<WalletIdentity | null>;
 
   // Operations
-  send: (params: { coinId: string; amount: string; recipient: string; memo?: string }) => Promise<any>;
-  resolve: (recipient: string) => Promise<any>;
+  send: (params: { coinId: string; amount: string; recipient: string; memo?: string }) => Promise<{ transactionId?: string }>;
+  resolve: (recipient: string) => Promise<NametagResolution | null>;
 
   // Nametag
-  registerNametag: (nametag: string) => Promise<any>;
+  registerNametag: (nametag: string) => Promise<NametagInfo>;
   isNametagAvailable: (nametag: string) => Promise<boolean>;
-  getMyNametag: () => Promise<any>;
+  getMyNametag: () => Promise<NametagInfo | null>;
 
   // Mnemonic
   getMnemonic: () => Promise<string | null>;
   exportWallet: () => Promise<string>;
 
   // Pending transactions (dApp)
-  getPendingTransactions: () => Promise<any[]>;
+  getPendingTransactions: () => Promise<PendingTransaction[]>;
   approveTransaction: (requestId: string) => Promise<void>;
   rejectTransaction: (requestId: string) => Promise<void>;
 
   // Config
-  getAggregatorConfig: () => Promise<any>;
-  setAggregatorConfig: (config: any) => Promise<void>;
+  getAggregatorConfig: () => Promise<AggregatorConfig>;
+  setAggregatorConfig: (config: AggregatorConfig) => Promise<void>;
 
   // Events
   onWalletUpdate: (callback: () => void) => () => void;

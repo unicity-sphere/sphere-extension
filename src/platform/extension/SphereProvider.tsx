@@ -4,8 +4,9 @@ import { TokenRegistry, NETWORKS } from '@unicitylabs/sphere-sdk';
 import { SphereContext, type SphereContextValue } from '@/sdk/context';
 import { SPHERE_KEYS } from '@/sdk/queryKeys';
 import type { WalletIdentity } from '@/sdk/types';
+import type { AggregatorConfig } from '@/shared/types';
 
-async function sendMessage(message: Record<string, unknown>): Promise<any> {
+async function sendMessage(message: Record<string, unknown>): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(message, (response) => {
       if (chrome.runtime.lastError) {
@@ -71,7 +72,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
             if (resolvedNametag) {
               setNametag(resolvedNametag);
             }
-          } catch {}
+          } catch { /* non-fatal — identity loaded without nametag */ }
         }
       } catch (err) {
         setError((err as Error).message);
@@ -83,7 +84,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
 
   // Listen for background broadcasts
   useEffect(() => {
-    const listener = (message: any) => {
+    const listener = (message: { type?: string }) => {
       if (message.type === 'BALANCES_UPDATED' || message.type === 'WALLET_UPDATE') {
         queryClient.invalidateQueries({ queryKey: SPHERE_KEYS.payments.all });
         queryClient.invalidateQueries({ queryKey: SPHERE_KEYS.identity.all });
@@ -139,7 +140,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
     try {
       const ntRes = await sendMessage({ type: 'POPUP_GET_MY_NAMETAG' });
       if (ntRes.nametag) setNametag(ntRes.nametag.nametag);
-    } catch {}
+    } catch { /* non-fatal — nametag fetch failed, continue without it */ }
   }, []);
 
   const lockWallet = useCallback(async () => {
@@ -241,7 +242,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
     return res.config;
   }, []);
 
-  const setAggregatorConfig = useCallback(async (config: any) => {
+  const setAggregatorConfig = useCallback(async (config: AggregatorConfig) => {
     await sendMessage({ type: 'POPUP_SET_AGGREGATOR_CONFIG', config });
   }, []);
 

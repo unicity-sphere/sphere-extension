@@ -7,6 +7,7 @@ import { SendModal } from './modals/SendModal';
 import { SwapModal } from './modals/SwapModal';
 import { PaymentRequestsModal } from './modals/PaymentRequestModal';
 import type { IncomingPaymentRequest } from './modals/PaymentRequestModal';
+import { PaymentRequestStatus } from './modals/PaymentRequestModal';
 import { TopUpModal } from './modals/TopUpModal';
 import { SeedPhraseModal } from './modals/SeedPhraseModal';
 import { TransactionHistoryModal } from './modals/TransactionHistoryModal';
@@ -106,7 +107,7 @@ export function L3WalletView({
   setIsRequestsOpen,
   isSettingsOpen,
   setIsSettingsOpen,
-  setIsL1WalletOpen,
+  setIsL1WalletOpen: _setIsL1WalletOpen,
 }: L3WalletViewProps) {
   // SDK hooks
   const { identity, isLoading: isLoadingIdentity } = useIdentity();
@@ -116,7 +117,7 @@ export function L3WalletView({
 
   const assets = sdkAssets;
   const tokens = sdkTokens;
-  const sendableTokens = useMemo(() => tokens.filter((t: any) => t.coinId !== 'NAMETAG'), [tokens]);
+  const sendableTokens = useMemo(() => tokens.filter((t) => t.coinId !== 'NAMETAG'), [tokens]);
 
   const [activeTab, setActiveTab] = useState<Tab>('assets');
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
@@ -136,7 +137,7 @@ export function L3WalletView({
       return new Set<string>(); // First load - no highlights
     }
     const newIds = new Set<string>();
-    tokens.filter((t: any) => t.coinId !== 'NAMETAG').forEach((token: any) => {
+    tokens.filter((t) => t.coinId !== 'NAMETAG').forEach((token) => {
       if (!prevTokenIdsRef.current.has(token.id)) {
         newIds.add(token.id);
       }
@@ -150,7 +151,7 @@ export function L3WalletView({
       return new Set<string>(); // First load - no highlights
     }
     const newIds = new Set<string>();
-    assets.forEach((asset: any) => {
+    assets.forEach((asset) => {
       if (!prevAssetCoinIdsRef.current.has(asset.coinId)) {
         newIds.add(asset.coinId);
       }
@@ -160,13 +161,13 @@ export function L3WalletView({
 
   // Update previous snapshots after render (for next comparison)
   useEffect(() => {
-    const currentIds = new Set<string>(tokens.filter((t: any) => t.coinId !== 'NAMETAG').map((t: any) => t.id));
+    const currentIds = new Set<string>(tokens.filter((t) => t.coinId !== 'NAMETAG').map((t) => t.id));
     prevTokenIdsRef.current = currentIds;
     isFirstLoadRef.current = false;
   }, [tokens]);
 
   useEffect(() => {
-    const currentIds = new Set<string>(assets.map((a: any) => a.coinId));
+    const currentIds = new Set<string>(assets.map((a) => a.coinId));
     prevAssetCoinIdsRef.current = currentIds;
   }, [assets]);
 
@@ -185,7 +186,7 @@ export function L3WalletView({
 
   const totalValue = useMemo(() => {
     // Sum up L3 asset values (using SDK-provided fiat values for accuracy)
-    const l3Value = sdkAssets.reduce((sum: number, asset: any) => sum + (asset.fiatValueUsd ?? 0), 0);
+    const l3Value = sdkAssets.reduce((sum, asset) => sum + (asset.fiatValueUsd ?? 0), 0);
     return l3Value;
   }, [sdkAssets]);
 
@@ -362,7 +363,7 @@ export function L3WalletView({
                   ) : (
                     <>
                       {/* L3 Assets */}
-                      {assets.map((asset: any, index: number) => (
+                      {assets.map((asset, index) => (
                         <AssetRow
                           key={asset.coinId}
                           asset={asset}
@@ -380,13 +381,13 @@ export function L3WalletView({
               {/* TOKENS VIEW */}
               {activeTab === 'tokens' && (
                 <div className="space-y-2">
-                  {tokens.filter((t: any) => t.coinId !== 'NAMETAG').length === 0 ? (
+                  {tokens.filter((t) => t.coinId !== 'NAMETAG').length === 0 ? (
                     <EmptyState text="No individual tokens found." />
                   ) : (
                     tokens
-                      .filter((t: any) => t.coinId !== 'NAMETAG')
-                      .sort((a: any, b: any) => b.createdAt - a.createdAt)
-                      .map((token: any, index: number) => (
+                      .filter((t) => t.coinId !== 'NAMETAG')
+                      .sort((a, b) => b.createdAt - a.createdAt)
+                      .map((token, index) => (
                         <TokenRow
                           key={token.id}
                           token={token}
@@ -412,7 +413,7 @@ export function L3WalletView({
         requests={paymentRequests}
         pendingCount={paymentRequests.filter(r => r.status === 'pending').length}
         reject={async (req) => { setPaymentRequests(prev => prev.filter(r => r.id !== req.id)); }}
-        paid={async (req) => { setPaymentRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'paid' as any } : r)); }}
+        paid={async (req) => { setPaymentRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: PaymentRequestStatus.PAID } : r)); }}
         clearProcessed={() => { setPaymentRequests(prev => prev.filter(r => r.status === 'pending')); }}
       />
       <SeedPhraseModal

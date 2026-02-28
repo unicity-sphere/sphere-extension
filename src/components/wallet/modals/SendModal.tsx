@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowRight, Loader2, User, CheckCircle, Coins, Hash, Copy, Check } from 'lucide-react';
+import type { Asset } from '@unicitylabs/sphere-sdk';
 import { useAssets, useTransfer, useSphereContext, CurrencyUtils } from '@/sdk';
 import { BaseModal, ModalHeader, Button } from '@/components/ui';
 
@@ -40,7 +41,7 @@ export function SendModal({ isOpen, onClose, prefill }: SendModalProps) {
 
   const [resolvedAddress, setResolvedAddress] = useState<string | null>(null);
 
-  const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [amountInput, setAmountInput] = useState('');
   const [memoInput, setMemoInput] = useState('');
 
@@ -63,7 +64,7 @@ export function SendModal({ isOpen, onClose, prefill }: SendModalProps) {
     setAmountInput(amount);
     if (prefill.memo) setMemoInput(prefill.memo);
 
-    const asset = assets.find((a: any) => a.coinId === coinId);
+    const asset = assets.find((a) => a.coinId === coinId);
     if (asset) {
       setSelectedAsset(asset);
       setStep('confirm');
@@ -244,7 +245,7 @@ export function SendModal({ isOpen, onClose, prefill }: SendModalProps) {
         {/* 2. ASSET */}
         {step === 'asset' && (
           <div className="space-y-2">
-            {assets.map((asset: any) => (
+            {assets.map((asset) => (
               <button
                 key={asset.coinId}
                 onClick={() => { setSelectedAsset(asset); setStep('amount'); }}

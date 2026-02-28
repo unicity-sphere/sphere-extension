@@ -13,8 +13,8 @@ export function useTokens() {
     structuralSharing: false,
   });
 
-  const confirmedTokens = tokens.filter((t: any) => t.status === 'confirmed');
-  const pendingTokens = tokens.filter((t: any) => t.status === 'pending' || t.status === 'submitted');
+  const confirmedTokens = tokens.filter((t) => t.status === 'confirmed');
+  const pendingTokens = tokens.filter((t) => t.status === 'pending' || t.status === 'submitted');
 
   return {
     tokens,

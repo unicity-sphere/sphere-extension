@@ -53,7 +53,7 @@ function AmountDisplay({ value, symbol, decimals, showBalances }: {
   return <span>{formatted} {symbol}</span>;
 }
 
-export const AssetRow = memo(function AssetRow({ asset, showBalances, delay, onClick, layer, isNew = true }: AssetRowProps) {
+export const AssetRow = memo(function AssetRow({ asset, showBalances, delay: _delay, onClick, layer, isNew: _isNew = true }: AssetRowProps) {
   const change24h = asset.change24h ?? 0;
   const changeColor = change24h >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-red-500 dark:text-red-400';
   const changeSign = change24h >= 0 ? '+' : '';

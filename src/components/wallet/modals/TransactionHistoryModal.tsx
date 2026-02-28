@@ -1,8 +1,21 @@
 import { useMemo, useState, useCallback } from 'react';
 import { ArrowUpRight, ArrowDownLeft, Loader2, Clock, ChevronDown, Copy, Check } from 'lucide-react';
+import type { TransactionHistoryEntry } from '@unicitylabs/sphere-sdk';
 import { TokenRegistry } from '@unicitylabs/sphere-sdk';
 import { useTransactionHistory } from '@/sdk';
 import { BaseModal, ModalHeader, EmptyState } from '@/components/ui';
+
+interface FormattedHistoryEntry extends TransactionHistoryEntry {
+  formattedAmount: string;
+  formattedTokenIds?: Array<{
+    id: string;
+    amount: string;
+    source: 'split' | 'direct';
+    formattedAmount: string;
+  }>;
+  date: string;
+  time: string;
+}
 
 /** Copy text to clipboard, return true on success */
 function useCopyToClipboard() {
@@ -80,13 +93,13 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
 
   const formattedHistory = useMemo(() => {
     const registry = TokenRegistry.getInstance();
-    return history.map((entry: any) => {
+    return history.map((entry): FormattedHistoryEntry => {
       const decimals = registry.getDecimals(entry.coinId);
 
       return {
         ...entry,
         formattedAmount: formatRawAmount(entry.amount, decimals),
-        formattedTokenIds: entry.tokenIds?.map((t: any) => ({
+        formattedTokenIds: entry.tokenIds?.map((t) => ({
           ...t,
           formattedAmount: formatRawAmount(t.amount, decimals),
         })),
@@ -125,7 +138,7 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
           />
         ) : (
           <div className="space-y-2">
-            {formattedHistory.map((entry: any) => {
+            {formattedHistory.map((entry) => {
               const isExpanded = expandedId === entry.id;
               const peerLabel = entry.type === 'RECEIVED'
                 ? (entry.senderNametag ? `@${entry.senderNametag}` : entry.senderAddress ? truncateMiddle(entry.senderAddress) : entry.senderPubkey ? `${entry.senderPubkey.slice(0, 4)}...${entry.senderPubkey.slice(-4)}` : null)
@@ -246,7 +259,7 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
                                 Tokens ({entry.formattedTokenIds.length})
                               </span>
                               <div className="mt-1 space-y-1">
-                                {entry.formattedTokenIds.map((t: any, idx: number) => (
+                                {entry.formattedTokenIds.map((t, idx) => (
                                   <div key={idx} className="flex items-center justify-between gap-2 pl-2 border-l-2 border-neutral-200 dark:border-neutral-700">
                                     <div className="flex items-center gap-1.5 min-w-0">
                                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${

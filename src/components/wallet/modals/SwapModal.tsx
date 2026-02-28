@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { ArrowDownUp, Loader2, TrendingUp, CheckCircle, ArrowDown } from 'lucide-react';
+import type { Asset } from '@unicitylabs/sphere-sdk';
 import { useIdentity, useAssets, useTransfer } from '@/sdk';
 import { CurrencyUtils } from '@/sdk';
 import { BaseModal, ModalHeader, Button } from '@/components/ui';
@@ -17,8 +18,8 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
   const { transfer } = useTransfer();
 
   const [step, setStep] = useState<Step>('swap');
-  const [fromAsset, setFromAsset] = useState<any>(null);
-  const [toAsset, setToAsset] = useState<any>(null);
+  const [fromAsset, setFromAsset] = useState<Asset | null>(null);
+  const [toAsset, setToAsset] = useState<Asset | null>(null);
   const [fromAmount, setFromAmount] = useState('');
   const [showFromDropdown, setShowFromDropdown] = useState(false);
   const [showToDropdown, setShowToDropdown] = useState(false);
@@ -28,7 +29,7 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
   const swappableAssets = useMemo(() => assets, [assets]);
 
   // Format asset amount from smallest unit to human-readable
-  const formatAssetAmount = (asset: any): string => {
+  const formatAssetAmount = (asset: Asset): string => {
     try {
       return CurrencyUtils.toHumanReadable(asset.totalAmount, asset.decimals);
     } catch {
@@ -36,7 +37,7 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
     }
   };
 
-  const resolvePrice = (asset: any): number => {
+  const resolvePrice = (asset: Asset): number => {
     return asset.priceUsd && asset.priceUsd > 0 ? asset.priceUsd : 1.0;
   };
 
@@ -91,12 +92,12 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
 
   const handleFlipAssets = () => {
     if (!fromAsset || !toAsset) return;
-    const newFrom = assets.find((a: any) => a.coinId === toAsset.coinId);
+    const newFrom = assets.find((a) => a.coinId === toAsset.coinId);
     if (!newFrom) {
       setError(`You don't have any ${toAsset.symbol} to swap from`);
       return;
     }
-    const newTo = swappableAssets.find((a: any) => a.coinId === fromAsset.coinId);
+    const newTo = swappableAssets.find((a) => a.coinId === fromAsset.coinId);
     setFromAsset(newFrom);
     setToAsset(newTo || fromAsset);
     setError(null);
@@ -152,7 +153,7 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
                     </button>
                     {showFromDropdown && (
                       <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                        {assets.map((asset: any) => (
+                        {assets.map((asset) => (
                           <button
                             key={asset.coinId}
                             onClick={() => { setFromAsset(asset); setShowFromDropdown(false); setFromAmount(''); }}
@@ -216,7 +217,7 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
                     </button>
                     {showToDropdown && (
                       <div className="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                        {swappableAssets.filter((a: any) => a.coinId !== fromAsset?.coinId).map((asset: any) => (
+                        {swappableAssets.filter((a) => a.coinId !== fromAsset?.coinId).map((asset) => (
                           <button
                             key={asset.coinId}
                             onClick={() => { setToAsset(asset); setShowToDropdown(false); }}

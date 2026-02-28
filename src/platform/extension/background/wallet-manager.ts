@@ -12,6 +12,7 @@
  */
 
 import { Sphere } from '@unicitylabs/sphere-sdk';
+import type { Asset, Token, TransactionHistoryEntry } from '@unicitylabs/sphere-sdk';
 import { NIP44 } from '@unicitylabs/nostr-js-sdk';
 import { createBrowserProviders } from '@unicitylabs/sphere-sdk/impl/browser';
 
@@ -172,6 +173,7 @@ export class WalletManager {
     console.log('[WalletManager] Wallet unlocked. Identity address:', identity?.l1Address);
     console.log('[WalletManager] Identity directAddress:', identity?.directAddress);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const transport = (this.sphere as any).getTransport?.() ?? (this.sphere as any)._transport;
       if (transport?.getNostrPubkey) {
         console.log('[WalletManager] Transport Nostr pubkey:', transport.getNostrPubkey());
@@ -182,7 +184,9 @@ export class WalletManager {
     }
     // Check if nametag token is loaded (required for receiving PROXY transfers)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const hasNametag = (this.sphere as any)._payments?.hasNametag?.() ?? false;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const nametagData = (this.sphere as any)._payments?.getNametag?.();
       console.log('[WalletManager] Nametag loaded:', hasNametag, nametagData ? `name=${nametagData.name}` : '(none)');
       if (!hasNametag) {
@@ -382,14 +386,14 @@ export class WalletManager {
   /**
    * Get assets list (v0.5.3 API or fallback).
    */
-  async getAssets(): Promise<any[]> {
+  async getAssets(): Promise<Asset[]> {
     const sphere = this.getSphere();
     try {
       // Try v0.5.3 API first
       if (typeof sphere.payments.getAssets === 'function') {
         return await sphere.payments.getAssets();
       }
-      // Fallback: aggregate from tokens
+      // Fallback: aggregate from tokens (legacy path, cast to Asset)
       return this.getBalances().map(b => ({
         coinId: b.coinId,
         symbol: b.symbol,
@@ -397,7 +401,7 @@ export class WalletManager {
         confirmedAmount: b.amount,
         unconfirmedAmount: b.pendingAmount || '0',
         decimals: COIN_DECIMALS[b.coinId] ?? DEFAULT_DECIMALS,
-      }));
+      })) as Asset[];
     } catch (error) {
       console.error('[WalletManager] Error getting assets:', error);
       return [];
@@ -407,7 +411,7 @@ export class WalletManager {
   /**
    * Get individual tokens list.
    */
-  getTokenList(): any[] {
+  getTokenList(): Token[] {
     const sphere = this.getSphere();
     try {
       return sphere.payments.getTokens();
@@ -420,7 +424,7 @@ export class WalletManager {
   /**
    * Get transaction history.
    */
-  getTransactionHistory(): any[] {
+  getTransactionHistory(): TransactionHistoryEntry[] {
     const sphere = this.getSphere();
     try {
       if (typeof sphere.payments.getHistory === 'function') {
@@ -436,7 +440,7 @@ export class WalletManager {
   /**
    * Get full identity info for the popup.
    */
-  getFullIdentity(): any | null {
+  getFullIdentity(): { chainPubkey: string; l1Address: string; directAddress?: string; nametag?: string } | null {
     const sphere = this.getSphere();
     const identity = sphere.identity;
     if (!identity) return null;
@@ -471,6 +475,7 @@ export class WalletManager {
   async checkTokenHealth(): Promise<TokenHealthResult> {
     const sphere = this.getSphere();
     const allTokens = sphere.payments.getTokens();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oracle = (sphere as any).getOracle?.() ?? (sphere as any)._oracle;
     const validTokens: typeof allTokens = [];
     const invalidTokens: { token: typeof allTokens[0]; reason: string }[] = [];
@@ -802,8 +807,10 @@ export class WalletManager {
     // Failure here is non-fatal — the nametag is already bound on Nostr
     // and saved locally. The mint can be retried later.
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (!(sphere as any)._payments?.hasNametag?.()) {
         console.log('[WalletManager] Minting nametag token on-chain...');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mintResult = await (sphere as any).mintNametag(cleanTag);
         if (!mintResult.success) {
           console.warn('[WalletManager] Nametag mint failed (non-fatal):', JSON.stringify(mintResult));
@@ -905,6 +912,7 @@ export class WalletManager {
       // The old token was minted with old identity's signing predicates — PROXY
       // finalization will fail with "Recipient verification failed" until re-minted.
       console.log(`[WalletManager] Step 2: Re-minting nametag token with new identity...`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payments = (sphere as any)._payments;
       if (payments?.clearNametag) {
         await payments.clearNametag();
@@ -938,6 +946,7 @@ export class WalletManager {
     console.log(`[WalletManager] Nametag token migration: clearing old token and re-minting @${nametagName}...`);
 
     // Clear old nametag token (minted with old identity's predicates)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payments = (sphere as any)._payments;
     if (payments?.clearNametag) {
       await payments.clearNametag();

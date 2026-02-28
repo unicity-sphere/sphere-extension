@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Sparkles, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Plus, Sparkles, CheckCircle, XCircle } from 'lucide-react';
 import { useIdentity } from '@/sdk';
 import { BaseModal, ModalHeader, Button } from '@/components/ui';
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useWalletStatus } from '@/sdk/hooks';
 import { useSphereContext } from '@/sdk/context';
 import { WalletPanel } from '@/components/wallet/WalletPanel';

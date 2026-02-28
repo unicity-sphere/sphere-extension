@@ -62,7 +62,7 @@ function TokenAmountDisplay({ amount, coinId, symbol }: {
   return <span>{formatted} {symbol || ''}</span>;
 }
 
-export const TokenRow = memo(function TokenRow({ token, delay, isNew = true }: TokenRowProps) {
+export const TokenRow = memo(function TokenRow({ token, delay: _delay, isNew: _isNew = true }: TokenRowProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyId = (e: React.MouseEvent) => {
