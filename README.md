@@ -37,6 +37,47 @@ npm run package
 
 Load the `dist/` folder as an unpacked extension in `chrome://extensions` for development.
 
+## Features
+
+- **Wallet management** — create, import, backup via seed phrase
+- **L3 payments** — send/receive UCT and other tokens
+- **L1 payments** — ALPHA blockchain transactions
+- **Nametags** — register @username for human-readable addresses
+- **Connect Protocol** — dApps can connect to the wallet via `ExtensionTransport` and request queries/intents
+- **Connected Sites** — manage approved dApp origins (Settings → Connected Sites)
+- **window.sphere API** — legacy web page integration via injected script
+
+## Connect Protocol (for dApp developers)
+
+Web dApps can integrate with Sphere Extension using the Sphere Connect protocol:
+
+```typescript
+import { ConnectClient } from '@unicitylabs/sphere-sdk/connect';
+import { ExtensionTransport } from '@unicitylabs/sphere-sdk/connect/browser';
+
+// Silent auto-connect on page load
+const client = new ConnectClient({
+  transport: ExtensionTransport.forClient(),
+  dapp: { name: 'My dApp', description: '...', url: location.origin },
+  silent: true,  // fast-fail if not approved — no popup
+});
+try {
+  const { identity } = await client.connect(); // instant if already approved
+} catch {
+  // Not approved — show Connect button
+}
+
+// User-triggered connect (shows approval popup in extension)
+const client2 = new ConnectClient({ transport: ExtensionTransport.forClient(), dapp });
+const { identity, permissions } = await client2.connect();
+
+// Queries and intents
+const balance = await client2.query('sphere_getBalance');
+await client2.intent('send', { recipient: '@alice', amount: 100, coinId: 'USDC' });
+```
+
+See [CONNECT.md](./CONNECT.md) for the full integration guide.
+
 ## Supported Tokens (Testnet)
 
 | Symbol | Decimals |

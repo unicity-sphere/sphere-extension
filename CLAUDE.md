@@ -103,6 +103,84 @@ Gateway URL: `https://goggregator-test.unicity.network` (testnet)
 - `dist/content.js` — content script
 - `dist/inject.js` — injected script (window.sphere)
 
+## Connect Protocol (Sphere Connect — dApp integration)
+
+The extension implements the Sphere Connect protocol on top of the SDK's `ConnectHost`. See [`CONNECT.md`](./CONNECT.md) for the full integration guide.
+
+### Key Files
+
+| File | Role |
+|------|------|
+| `src/platform/extension/background/connect-host.ts` | ConnectHost lifecycle, approved origins, approval/intent queues |
+| `src/platform/extension/background/message-handler.ts` | Routes POPUP_* messages from popup to connect-host |
+| `src/platform/extension/background/wallet-manager.ts` | Calls `initConnectHost()` after unlock, `destroyConnectHost()` on lock |
+| `src/platform/extension/content/index.ts` | Relays `sphere-connect-ext` messages between page ↔ background |
+| `src/components/wallet/modals/ConnectApprovalModal.tsx` | UI for first-time dApp connection approval |
+| `src/components/wallet/modals/ConnectIntentModal.tsx` | UI for generic intent approval |
+| `src/components/wallet/modals/ConnectedSitesModal.tsx` | Settings → Connected Sites (list + revoke) |
+
+### Approved Origins Storage
+
+```typescript
+interface ApprovedOriginEntry {
+  permissions: PermissionScope[];
+  connectedAt: number;   // first approval timestamp
+  lastSeenAt: number;    // last successful silent-connect timestamp
+  dapp: DAppMetadata;    // name, description, url, iconUrl?
+}
+// chrome.storage.local key: 'sphere_approved_origins'
+```
+
+### POPUP_* Messages for Connect Protocol
+
+```typescript
+// Poll for pending connection approval
+{ type: 'POPUP_GET_CONNECT_APPROVAL' }
+// → null | { id, dapp, requestedPermissions }
+
+// Resolve approval (user clicked Connect or Reject)
+{ type: 'POPUP_RESOLVE_CONNECT_APPROVAL', id, approved: true, grantedPermissions }
+
+// Poll for pending intent
+{ type: 'POPUP_GET_CONNECT_INTENT' }
+// → null | { id, action, params, session }
+
+// Resolve intent
+{ type: 'POPUP_RESOLVE_CONNECT_INTENT', id, result: { result: {...} } | { error: {...} } }
+
+// Get connected sites (for ConnectedSitesModal)
+{ type: 'POPUP_GET_CONNECTED_SITES' }
+// → { success: true, sites: Record<string, ApprovedOriginEntry> }
+
+// Revoke a site
+{ type: 'POPUP_REVOKE_CONNECTED_SITE', origin: 'https://...' }
+// → { success: true }
+```
+
+### Silent Mode (auto-connect)
+
+When `silent=true` arrives in handshake:
+- Origin in approved storage → approve immediately (update `lastSeenAt`)
+- Origin NOT in storage → reject immediately (no popup, no window)
+
+### onDisconnect
+
+When dApp calls `client.disconnect()` → SDK fires `onDisconnect(session)` → extension calls `revokeConnectedSite(origin)` → origin removed from storage → next silent-check fails → Connect button shown.
+
+### Content Script Relay
+
+```
+Page: window.postMessage({ type: 'sphere-connect-ext:tohost', ... })
+  → content script: chrome.runtime.sendMessage(envelope)
+  → background: ConnectHost handles it
+
+Background: chrome.tabs.sendMessage(tabId, { type: 'sphere-connect-ext:toclient', ... })
+  → content script: window.postMessage(message, '*')
+  → page: ExtensionTransport.forClient() receives it
+```
+
+---
+
 ## window.sphere API (exposed to web pages via inject/index.ts)
 ```typescript
 window.sphere.isInstalled(): boolean
