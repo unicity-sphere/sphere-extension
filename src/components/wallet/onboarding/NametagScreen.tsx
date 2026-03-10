@@ -49,18 +49,18 @@ export function NametagScreen({
       {/* Success Icon */}
       <div className="relative w-18 h-18 mx-auto mb-5">
         <div className="absolute inset-0 bg-emerald-500/30 rounded-full blur-xl" />
-        <div className="relative w-full h-full rounded-full bg-neutral-100 dark:bg-neutral-800/80 border-2 border-emerald-500/50 flex items-center justify-center backdrop-blur-sm">
-          <ShieldCheck className="w-9 h-9 text-emerald-500 dark:text-emerald-400" />
+        <div className="relative w-full h-full rounded-full bg-white/6 border-2 border-emerald-500/50 flex items-center justify-center backdrop-blur-sm">
+          <ShieldCheck className="w-9 h-9 text-emerald-400" />
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 tracking-tight">
+      <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
         Choose Unicity ID
       </h2>
 
-      <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-5 mx-auto leading-relaxed">
+      <p className="text-[#ffe2cc] text-sm mb-5 mx-auto leading-relaxed">
         Choose a unique{" "}
-        <span className="text-orange-500 dark:text-orange-400 font-bold">
+        <span className="text-brand-orange font-bold">
           Unicity ID
         </span>{" "}
         to receive tokens easily without long addresses.
@@ -71,8 +71,8 @@ export function NametagScreen({
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 z-10">
           {availability === "checking" && <Loader2 className="w-3.5 h-3.5 text-neutral-400 animate-spin" />}
           {availability === "available" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
-          {availability === "taken" && <AlertCircle className="w-3.5 h-3.5 text-red-500" />}
-          <span className="text-neutral-400 dark:text-neutral-500 group-focus-within:text-orange-500 dark:group-focus-within:text-orange-400 transition-colors text-xs font-medium">
+          {availability === "taken" && <AlertCircle className="w-3.5 h-3.5 text-red-400" />}
+          <span className="text-neutral-500 group-focus-within:text-brand-orange transition-colors text-xs font-medium">
             @unicity
           </span>
         </div>
@@ -82,27 +82,27 @@ export function NametagScreen({
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder="id"
-          className={`w-full bg-neutral-100 dark:bg-neutral-800/50 border rounded-xl py-3 pl-3 pr-28 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-600 focus:outline-none focus:bg-white dark:focus:bg-neutral-800 transition-all backdrop-blur-sm ${
+          className={`w-full bg-[#1a1a1a] border rounded-xl py-3 pl-3 pr-28 text-sm text-white placeholder-neutral-500 focus:outline-none focus:bg-[#1a1a1a] transition-all backdrop-blur-sm ${
             availability === "taken"
-              ? "border-red-400 dark:border-red-500/50 focus:border-red-500"
+              ? "border-red-500/50 focus:border-red-400"
               : availability === "available"
-                ? "border-emerald-400 dark:border-emerald-500/50 focus:border-emerald-500"
-                : "border-neutral-200 dark:border-neutral-700/50 focus:border-orange-500"
+                ? "border-emerald-500/50 focus:border-emerald-500"
+                : "border-white/10 focus:border-brand-orange"
           }`}
           autoFocus
         />
-        <div className="absolute inset-0 rounded-xl bg-linear-to-r from-orange-500/0 via-orange-500/5 to-purple-500/0 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+        <div className="absolute inset-0 rounded-xl bg-linear-to-r from-brand-orange/0 via-brand-orange/5 to-purple-500/0 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
       </div>
 
       {/* Availability status -- fixed height to prevent layout shift */}
       <div className="h-5 -mt-2 mb-1">
         {availability === "taken" && !error && (
-          <p className="text-red-500 dark:text-red-400 text-xs">
+          <p className="text-red-400 text-xs">
             @{nametagInput} is already taken
           </p>
         )}
         {availability === "available" && (
-          <p className="text-emerald-500 dark:text-emerald-400 text-xs">
+          <p className="text-emerald-400 text-xs">
             @{nametagInput} is available
           </p>
         )}
@@ -112,9 +112,9 @@ export function NametagScreen({
       <button
         onClick={onSubmit}
         disabled={!canSubmit}
-        className="relative w-full py-3.5 px-5 rounded-xl bg-linear-to-r from-orange-500 to-orange-600 text-white text-sm font-bold shadow-xl shadow-orange-500/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden group"
+        className="relative w-full py-3.5 px-5 rounded-xl bg-linear-to-r from-brand-orange to-brand-orange-dark text-white text-sm font-bold shadow-xl shadow-brand-orange/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden group"
       >
-        <div className="absolute inset-0 bg-linear-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-linear-to-r from-brand-orange to-brand-orange-dark opacity-0 group-hover:opacity-100 transition-opacity" />
         <span className="relative z-10 flex items-center gap-2">
           Continue
           <ArrowRight className="w-4 h-4" />
@@ -126,7 +126,7 @@ export function NametagScreen({
         <button
           onClick={onSkip}
           disabled={isBusy}
-          className="w-full mt-3 py-2.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors disabled:opacity-50"
+          className="w-full mt-3 py-2.5 text-xs text-[#ffe2cc] hover:text-neutral-300 transition-colors disabled:opacity-50"
         >
           Skip for now
         </button>
@@ -137,7 +137,7 @@ export function NametagScreen({
         <button
           onClick={onBack}
           disabled={isBusy}
-          className="w-full mt-2 py-2.5 text-xs text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+          className="w-full mt-2 py-2.5 text-xs text-neutral-500 hover:text-neutral-300 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back
@@ -145,7 +145,7 @@ export function NametagScreen({
       )}
 
       {error && (
-        <p className="mt-3 text-red-500 dark:text-red-400 text-xs bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
+        <p className="mt-3 text-red-400 text-xs bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
           {error}
         </p>
       )}

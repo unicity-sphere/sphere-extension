@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { Globe, Shield } from 'lucide-react';
 import { PERMISSION_SCOPES } from '@unicitylabs/sphere-sdk/connect';
 import type { PermissionScope } from '@unicitylabs/sphere-sdk/connect';
-import { BaseModal } from '@/components/ui/BaseModal';
+import { WalletScreen } from '@/components/ui/WalletScreen';
 import { ModalHeader } from '@/components/ui/ModalHeader';
 import { Button } from '@/components/ui/Button';
 import { POPUP_MESSAGES } from '@/shared/messages';
@@ -139,21 +139,21 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
   const { dapp, requestedPermissions } = approval;
 
   return (
-    <BaseModal isOpen={isOpen} onClose={handleReject} size="sm">
+    <WalletScreen isOpen={isOpen} onClose={handleReject}>
       <ModalHeader title="Connect Request" onClose={handleReject} />
 
       <div className="p-4 space-y-4 overflow-y-auto">
         {/* dApp identity */}
-        <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-white/10">
+        <div className="flex items-center gap-3 p-3 bg-white/4 rounded-xl border border-white/10">
           {dapp.icon ? (
             <img src={dapp.icon} alt={dapp.name} className="w-10 h-10 rounded-xl" />
           ) : (
-            <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center">
-              <Globe size={20} className="text-orange-500" />
+            <div className="w-10 h-10 rounded-xl bg-brand-orange/20 flex items-center justify-center">
+              <Globe size={20} className="text-brand-orange" />
             </div>
           )}
           <div className="min-w-0">
-            <p className="font-semibold text-sm text-neutral-900 dark:text-white truncate">{dapp.name}</p>
+            <p className="font-semibold text-sm text-white truncate">{dapp.name}</p>
             <p className="text-xs text-neutral-500 truncate">{dapp.url}</p>
             {dapp.description && (
               <p className="text-xs text-neutral-400 mt-0.5 line-clamp-2">{dapp.description}</p>
@@ -165,7 +165,7 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
         <div>
           <div className="flex items-center gap-1.5 mb-2">
             <Shield size={14} className="text-neutral-400" />
-            <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
+            <span className="text-xs font-medium text-[#ffe2cc] uppercase tracking-wide">
               Permissions
             </span>
           </div>
@@ -175,7 +175,7 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
               return (
                 <label
                   key={perm}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/30 cursor-pointer"
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/4 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -184,7 +184,7 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
                     disabled={isIdentity}
                     className="w-4 h-4 rounded accent-orange-500 shrink-0"
                   />
-                  <span className={`text-sm ${isIdentity ? 'text-neutral-400 dark:text-neutral-500' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                  <span className={`text-sm ${isIdentity ? 'text-neutral-500' : 'text-neutral-300'}`}>
                     {PERMISSION_LABELS[perm] ?? perm}
                   </span>
                   {isIdentity && (
@@ -198,7 +198,7 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
       </div>
 
       {/* Actions */}
-      <div className="p-4 flex gap-2 border-t border-neutral-200 dark:border-white/10">
+      <div className="p-4 flex gap-2 border-t border-white/10">
         <Button variant="secondary" fullWidth onClick={handleReject} loading={loading} disabled={loading}>
           Reject
         </Button>
@@ -206,6 +206,6 @@ export function ConnectApprovalModal({ isOpen, onClose }: ConnectApprovalModalPr
           Connect
         </Button>
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }

@@ -750,15 +750,29 @@ export class WalletManager {
   }
 
   async getMyNametag(): Promise<NametagInfo | null> {
+    // First check chrome.storage.local (set when registered via extension)
     const stored = await this.getStoredNametag();
-    if (!stored) return null;
+    if (stored) {
+      return {
+        nametag: stored.name,
+        proxyAddress: stored.proxyAddress,
+        tokenId: '',
+        status: 'active',
+      };
+    }
 
-    return {
-      nametag: stored.name,
-      proxyAddress: stored.proxyAddress,
-      tokenId: '',
-      status: 'active',
-    };
+    // Fallback: check SDK identity (nametag may have been registered via web app)
+    if (this.sphere?.identity?.nametag) {
+      const identity = this.sphere.identity;
+      return {
+        nametag: identity.nametag!,
+        proxyAddress: identity.directAddress ?? identity.l1Address,
+        tokenId: '',
+        status: 'active',
+      };
+    }
+
+    return null;
   }
 
   // ============ Nametag Binding Verification ============

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Globe, Trash2, Loader2, Link } from 'lucide-react';
-import { BaseModal, ModalHeader, EmptyState } from '@/components/ui';
+import { WalletScreen, ModalHeader, EmptyState } from '@/components/ui';
 import type { ApprovedOriginEntry } from '@/platform/extension/background/connect-host';
 import { POPUP_MESSAGES } from '@/shared/messages';
 
@@ -73,7 +73,7 @@ export function ConnectedSitesModal({ isOpen, onClose }: ConnectedSitesModalProp
   }, []);
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} size="sm" showOrbs={false}>
+    <WalletScreen isOpen={isOpen} onClose={onClose}>
       <ModalHeader title="Connected Sites" icon={Link} iconVariant="neutral" onClose={onClose} />
 
       <div className="overflow-y-auto flex-1 p-4">
@@ -92,10 +92,10 @@ export function ConnectedSitesModal({ isOpen, onClose }: ConnectedSitesModalProp
             {sites.map(({ origin, data }) => (
               <div
                 key={origin}
-                className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl"
+                className="flex items-center gap-3 p-3 bg-white/6 rounded-2xl"
               >
                 {/* Favicon */}
-                <div className="w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center shrink-0 overflow-hidden">
                   <img
                     src={getFaviconUrl(origin)}
                     alt=""
@@ -110,13 +110,13 @@ export function ConnectedSitesModal({ isOpen, onClose }: ConnectedSitesModalProp
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
+                  <p className="text-sm font-semibold text-white truncate">
                     {data.dapp.name || origin.replace(/^https?:\/\//, '')}
                   </p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                  <p className="text-xs text-[#ffe2cc] truncate">
                     {origin.replace(/^https?:\/\//, '')}
                   </p>
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <p className="text-xs text-neutral-500 mt-0.5">
                     Last seen {formatLastSeen(data.lastSeenAt)}
                   </p>
                 </div>
@@ -125,7 +125,7 @@ export function ConnectedSitesModal({ isOpen, onClose }: ConnectedSitesModalProp
                 <button
                   onClick={() => handleRevoke(origin)}
                   disabled={revokingOrigin === origin}
-                  className="p-2 rounded-xl text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors disabled:opacity-50 shrink-0"
+                  className="p-2 rounded-xl text-neutral-400 hover:text-red-400 hover:bg-red-900/10 transition-colors disabled:opacity-50 shrink-0"
                   title="Disconnect"
                 >
                   {revokingOrigin === origin ? (
@@ -139,6 +139,6 @@ export function ConnectedSitesModal({ isOpen, onClose }: ConnectedSitesModalProp
           </div>
         )}
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }

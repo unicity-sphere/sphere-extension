@@ -13,6 +13,7 @@ export interface SphereContextValue {
   // Identity
   identity: WalletIdentity | null;
   nametag: string | null;
+  isNametagLoading: boolean;
 
   // Wallet lifecycle
   createWallet: (password: string) => Promise<{ mnemonic: string }>;

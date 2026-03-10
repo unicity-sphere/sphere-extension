@@ -1,5 +1,107 @@
 @import "tailwindcss";
 
+/* Dark mode variant for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Local font faces — bundled in public/fonts/ */
+@font-face {
+  font-family: 'Anton';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Anton-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Geist-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/Geist-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/GeistMono-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/GeistMono-Medium.ttf') format('truetype');
+}
+
+/* Dark mode colors — matched to Sphere web app */
+:root {
+  --color-bg-primary: #060606;
+  --color-bg-secondary: #0d0d0d;
+  --color-bg-tertiary: #111111;
+  --color-bg-card: #111111;
+  --color-bg-input: #1a1a1a;
+
+  --color-border-primary: rgba(255, 255, 255, 0.07);
+  --color-border-secondary: rgba(255, 255, 255, 0.12);
+
+  --color-text-primary: #fefefe;
+  --color-text-secondary: #ffe2cc;
+  --color-text-tertiary: rgba(255, 255, 255, 0.45);
+  --color-text-muted: rgba(255, 255, 255, 0.28);
+
+  --color-surface-hover: rgba(255, 111, 0, 0.06);
+  --color-surface-active: rgba(255, 111, 0, 0.12);
+
+  --scrollbar-thumb: #1a1a1a;
+  --scrollbar-track: transparent;
+}
+
+@theme {
+  /* Modal background (warm dark brown) */
+  --color-modal-bg: #120800;
+
+  /* Splash-screen orange palette */
+  --color-brand-orange: #FF6F00;
+  --color-brand-orange-dark: #e06400;
+  --color-brand-orange-glass: rgba(255, 111, 0, 0.15);
+  --color-brand-orange-border: rgba(255, 111, 0, 0.25);
+  --color-brand-orange-glow: rgba(255, 111, 0, 0.35);
+  --color-brand-orange-dim: rgba(255, 111, 0, 0.08);
+
+  /* Typography */
+  --font-display: 'Anton', sans-serif;
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', 'Fira Code', monospace;
+
+  /* Semantic theme colors */
+  --color-theme-bg-primary: var(--color-bg-primary);
+  --color-theme-bg-secondary: var(--color-bg-secondary);
+  --color-theme-bg-tertiary: var(--color-bg-tertiary);
+  --color-theme-bg-card: var(--color-bg-card);
+  --color-theme-bg-input: var(--color-bg-input);
+
+  --color-theme-border: var(--color-border-primary);
+  --color-theme-border-secondary: var(--color-border-secondary);
+
+  --color-theme-text: var(--color-text-primary);
+  --color-theme-text-secondary: var(--color-text-secondary);
+  --color-theme-text-muted: var(--color-text-tertiary);
+
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
 @layer base {
   html, body {
     width: 375px;
@@ -7,20 +109,25 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: white;
-    color: #171717;
+    background-color: #060606;
+    color: #fefefe;
   }
 
   #root {
     width: 375px;
     height: 667px;
     overflow: hidden;
+    background: transparent;
   }
 
-  /* Custom scrollbar — hidden by default, visible on hover */
+  input, textarea, select {
+    font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  /* Scrollbar styling */
   ::-webkit-scrollbar {
     width: 4px;
   }
@@ -32,6 +139,43 @@
     border-radius: 2px;
   }
   *:hover::-webkit-scrollbar-thumb {
-    background: #a3a3a3;
+    background: #1a1a1a;
   }
+}
+
+/* Text readability over planet background.
+   Dark halo around letters for legibility over bright sphere. */
+h1, h2, h3 {
+  text-shadow: 0 0 24px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* Gradient text — reset text-shadow to avoid bleed-through */
+.bg-clip-text {
+  text-shadow: none;
+}
+
+/* Cards with backdrop-blur — no text-shadow needed */
+.no-text-shadow h1,
+.no-text-shadow h2,
+.no-text-shadow h3 {
+  text-shadow: none;
+}
+
+/* Hide scrollbar for swipeable containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }

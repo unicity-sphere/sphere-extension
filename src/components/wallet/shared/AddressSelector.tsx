@@ -49,7 +49,7 @@ export function AddressSelector({ compact = true }: AddressSelectorProps) {
             </span>
             <button
               onClick={handleCopyNametag}
-              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 rounded transition-colors"
+              className="p-1 hover:bg-white/6 rounded transition-colors"
               title="Copy nametag"
             >
               {copied === 'nametag' ? (
@@ -66,7 +66,7 @@ export function AddressSelector({ compact = true }: AddressSelectorProps) {
             </span>
             <button
               onClick={handleCopyDirectAddress}
-              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 rounded transition-colors"
+              className="p-1 hover:bg-white/6 rounded transition-colors"
               title={`Copy direct address: ${directAddress}`}
             >
               {copied === 'address' ? (
@@ -85,9 +85,9 @@ export function AddressSelector({ compact = true }: AddressSelectorProps) {
   return (
     <div className="flex items-center gap-2">
       {nametag ? (
-        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">@{nametag}</span>
+        <span className="text-sm font-medium text-blue-400">@{nametag}</span>
       ) : directAddress ? (
-        <span className="text-sm font-mono text-neutral-700 dark:text-neutral-300">
+        <span className="text-sm font-mono text-neutral-300">
           {directAddress.slice(0, 8)}...{directAddress.slice(-6)}
         </span>
       ) : (

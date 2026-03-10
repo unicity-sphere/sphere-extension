@@ -72,7 +72,7 @@ export const TokenRow = memo(function TokenRow({ token, delay: _delay, isNew: _i
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const className = "p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200/50 dark:border-white/5 hover:border-neutral-300 dark:hover:border-white/10 transition-all group";
+  const className = "p-3 rounded-xl bg-white/4 border border-white/5 hover:border-white/10 transition-all group";
 
   const amountDisplay = (
     <TokenAmountDisplay
@@ -89,15 +89,15 @@ export const TokenRow = memo(function TokenRow({ token, delay: _delay, isNew: _i
           {(token.iconUrl || TokenRegistry.getInstance().getIconUrl(token.coinId)) ? (
             <img src={token.iconUrl || TokenRegistry.getInstance().getIconUrl(token.coinId)!} alt={token.symbol} className="w-full h-full object-cover" />
           ) : (
-            <Box className="w-5 h-5 text-neutral-400 dark:text-neutral-500" />
+            <Box className="w-5 h-5 text-neutral-500" />
           )}
         </div>
         <div>
-          <div className="text-neutral-900 dark:text-white font-medium text-sm">
+          <div className="text-white font-medium text-sm">
             {amountDisplay}
           </div>
           <div
-            className="flex items-center gap-1 text-[10px] text-neutral-500 font-mono cursor-pointer hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+            className="flex items-center gap-1 text-[10px] text-neutral-500 font-mono cursor-pointer hover:text-brand-orange transition-colors"
             onClick={handleCopyId}
           >
             <span>ID: {token.id.slice(0, 8)}...</span>
@@ -107,21 +107,21 @@ export const TokenRow = memo(function TokenRow({ token, delay: _delay, isNew: _i
       </div>
       <div className="flex flex-col items-end gap-1">
         {token.status === 'confirmed' ? (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-900/30 text-emerald-400 border border-emerald-800">
             Confirmed
           </span>
         ) : token.status === 'transferring' ? (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center gap-1">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-900/30 text-blue-400 border border-blue-800 flex items-center gap-1">
             <Loader2 className="w-2.5 h-2.5 animate-spin" />
             Sending
           </span>
         ) : (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-900/30 text-amber-400 border border-amber-800 flex items-center gap-1">
             <Loader2 className="w-2.5 h-2.5 animate-spin" />
             Pending
           </span>
         )}
-        <span className="text-[10px] text-neutral-400 dark:text-neutral-600">
+        <span className="text-[10px] text-neutral-600">
           {new Date(token.createdAt).toLocaleDateString()}
         </span>
       </div>

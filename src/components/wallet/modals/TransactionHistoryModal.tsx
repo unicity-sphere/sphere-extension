@@ -3,7 +3,7 @@ import { ArrowUpRight, ArrowDownLeft, Loader2, Clock, ChevronDown, Copy, Check }
 import type { TransactionHistoryEntry } from '@unicitylabs/sphere-sdk';
 import { TokenRegistry } from '@unicitylabs/sphere-sdk';
 import { useTransactionHistory } from '@/sdk';
-import { BaseModal, ModalHeader, EmptyState } from '@/components/ui';
+import { WalletScreen, ModalHeader, EmptyState } from '@/components/ui';
 
 interface FormattedHistoryEntry extends TransactionHistoryEntry {
   formattedAmount: string;
@@ -62,14 +62,14 @@ function DetailRow({ label, value, copyKey, copiedKey, onCopy }: {
 }) {
   return (
     <div className="flex items-center justify-between gap-2 py-1">
-      <span className="text-[11px] text-neutral-500 dark:text-neutral-400 shrink-0">{label}</span>
+      <span className="text-[11px] text-[#ffe2cc] shrink-0">{label}</span>
       <div className="flex items-center gap-1 min-w-0">
-        <span className="text-[11px] text-neutral-700 dark:text-neutral-300 font-mono truncate">
+        <span className="text-[11px] text-neutral-300 font-mono truncate">
           {truncateMiddle(value)}
         </span>
         <button
           onClick={(e) => { e.stopPropagation(); onCopy(value, copyKey); }}
-          className="shrink-0 p-0.5 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
+          className="shrink-0 p-0.5 hover:bg-white/8 rounded transition-colors"
           title="Copy"
         >
           {copiedKey === copyKey
@@ -123,14 +123,14 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose}>
+    <WalletScreen isOpen={isOpen} onClose={onClose}>
       <ModalHeader title="Transaction History" icon={Clock} onClose={onClose} />
 
       {/* Content - Scrollable */}
       <div className="relative flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3 z-10 min-h-0 bg-transparent">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+            <Loader2 className="w-6 h-6 animate-spin text-brand-orange" />
           </div>
         ) : history.length === 0 ? (
           <EmptyState
@@ -149,7 +149,7 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
               return (
                 <div
                   key={entry.id}
-                  className="bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  className="bg-white/6 border border-white/10 rounded-xl hover:bg-white/6 transition-colors cursor-pointer"
                   onClick={() => toggleExpand(entry.id)}
                 >
                   {/* Main row */}
@@ -159,16 +159,16 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
                       {entry.iconUrl ? (
                         <img src={entry.iconUrl} className="w-10 h-10 rounded-full" alt="" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
-                          <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                        <div className="w-10 h-10 rounded-full bg-white/8 flex items-center justify-center">
+                          <span className="text-sm font-medium text-[#ffe2cc]">
                             {entry.symbol?.slice(0, 2) || '??'}
                           </span>
                         </div>
                       )}
-                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-neutral-50 dark:border-neutral-800 ${
+                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white/6 ${
                         entry.type === 'RECEIVED'
                           ? 'bg-emerald-500'
-                          : 'bg-orange-500'
+                          : 'bg-brand-orange'
                       }`}>
                         {entry.type === 'RECEIVED' ? (
                           <ArrowDownLeft className="w-3 h-3 text-white" />
@@ -180,19 +180,19 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
 
                     {/* Title & Subtitle */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-neutral-900 dark:text-white">
+                      <div className="text-sm font-medium text-white">
                         {entry.type === 'RECEIVED' ? 'Received' : 'Sent'}
                         {peerLabel && (
-                          <span className="text-neutral-500 dark:text-neutral-400 font-normal ml-1">
+                          <span className="text-[#ffe2cc] font-normal ml-1">
                             {entry.type === 'RECEIVED' ? 'from' : 'to'} {peerLabel}
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-neutral-400/70 dark:text-neutral-500/60">
+                      <div className="text-[11px] text-neutral-500/60">
                         {entry.date} &bull; {entry.time}
                       </div>
                       {entry.memo && (
-                        <div className="text-[11px] text-neutral-500 dark:text-neutral-400 italic truncate mt-0.5">
+                        <div className="text-[11px] text-[#ffe2cc] italic truncate mt-0.5">
                           &ldquo;{entry.memo}&rdquo;
                         </div>
                       )}
@@ -202,8 +202,8 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
                     <div className="flex items-center gap-1.5 shrink-0">
                       <div className={`text-sm font-semibold ${
                         entry.type === 'RECEIVED'
-                          ? 'text-emerald-600 dark:text-emerald-400'
-                          : 'text-neutral-900 dark:text-white'
+                          ? 'text-emerald-400'
+                          : 'text-white'
                       }`}>
                         {entry.type === 'RECEIVED' ? '+' : '-'}{entry.formattedAmount} {entry.symbol}
                       </div>
@@ -214,7 +214,7 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
                   {/* Expandable detail panel */}
                   {isExpanded && (
                     <div className="overflow-hidden">
-                      <div className="px-4 pb-3 pt-0 border-t border-neutral-200/50 dark:border-neutral-700/30">
+                      <div className="px-4 pb-3 pt-0 border-t border-white/10">
                         <div className="pt-2 space-y-0.5">
                           {/* Peer info */}
                           {entry.type === 'RECEIVED' && (
@@ -247,8 +247,8 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
                           {/* Memo */}
                           {entry.memo && (
                             <div className="py-1">
-                              <span className="text-[11px] text-neutral-500 dark:text-neutral-400">Memo</span>
-                              <div className="text-[11px] text-neutral-700 dark:text-neutral-300 italic mt-0.5">
+                              <span className="text-[11px] text-[#ffe2cc]">Memo</span>
+                              <div className="text-[11px] text-neutral-300 italic mt-0.5">
                                 &ldquo;{entry.memo}&rdquo;
                               </div>
                             </div>
@@ -257,26 +257,26 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
                           {/* Token breakdown (V6 combined transfers) */}
                           {entry.formattedTokenIds && entry.formattedTokenIds.length > 1 && (
                             <div className="py-1">
-                              <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                              <span className="text-[11px] text-[#ffe2cc]">
                                 Tokens ({entry.formattedTokenIds.length})
                               </span>
                               <div className="mt-1 space-y-1">
                                 {entry.formattedTokenIds.map((t, idx) => (
-                                  <div key={idx} className="flex items-center justify-between gap-2 pl-2 border-l-2 border-neutral-200 dark:border-neutral-700">
+                                  <div key={idx} className="flex items-center justify-between gap-2 pl-2 border-l-2 border-white/10">
                                     <div className="flex items-center gap-1.5 min-w-0">
                                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
                                         t.source === 'split'
-                                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                                          : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                          ? 'bg-amber-900/30 text-amber-400'
+                                          : 'bg-blue-900/30 text-blue-400'
                                       }`}>
                                         {t.source}
                                       </span>
-                                      <span className="text-[11px] text-neutral-700 dark:text-neutral-300 font-mono truncate">
+                                      <span className="text-[11px] text-neutral-300 font-mono truncate">
                                         {truncateMiddle(t.id, 8, 6)}
                                       </span>
                                       <button
                                         onClick={(e) => { e.stopPropagation(); copy(t.id, `${entry.id}-tid-${idx}`); }}
-                                        className="shrink-0 p-0.5 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
+                                        className="shrink-0 p-0.5 hover:bg-white/8 rounded transition-colors"
                                         title="Copy Token ID"
                                       >
                                         {copiedKey === `${entry.id}-tid-${idx}`
@@ -285,7 +285,7 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
                                         }
                                       </button>
                                     </div>
-                                    <span className="text-[11px] text-neutral-600 dark:text-neutral-400 font-mono shrink-0">
+                                    <span className="text-[11px] text-[#ffe2cc] font-mono shrink-0">
                                       {t.formattedAmount} {entry.symbol}
                                     </span>
                                   </div>
@@ -302,8 +302,8 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
                             <DetailRow label="Transfer ID" value={entry.transferId} copyKey={`${entry.id}-txid`} copiedKey={copiedKey} onCopy={copy} />
                           )}
                           <div className="flex items-center justify-between py-1">
-                            <span className="text-[11px] text-neutral-500 dark:text-neutral-400">Amount (raw)</span>
-                            <span className="text-[11px] text-neutral-700 dark:text-neutral-300 font-mono">{entry.amount}</span>
+                            <span className="text-[11px] text-[#ffe2cc]">Amount (raw)</span>
+                            <span className="text-[11px] text-neutral-300 font-mono">{entry.amount}</span>
                           </div>
                         </div>
                       </div>
@@ -315,6 +315,6 @@ export function TransactionHistoryModal({ isOpen, onClose }: TransactionHistoryM
           </div>
         )}
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type ModalSize = 'sm' | 'md' | 'lg';
 
@@ -9,8 +9,6 @@ interface BaseModalProps {
   children: ReactNode;
   /** Modal max-width: sm (384px), md (448px), lg (512px) */
   size?: ModalSize;
-  /** Show decorative background orbs */
-  showOrbs?: boolean;
   /** Additional className for the modal container */
   className?: string;
 }
@@ -26,54 +24,37 @@ export function BaseModal({
   onClose,
   children,
   size = 'md',
-  showOrbs = true,
   className = '',
 }: BaseModalProps) {
-  const backdropRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  // Handle enter/exit transitions via CSS classes
-  useEffect(() => {
-    if (isOpen) {
-      // Trigger enter transition on next frame so the initial state is rendered first
-      requestAnimationFrame(() => {
-        backdropRef.current?.classList.add('opacity-100');
-        backdropRef.current?.classList.remove('opacity-0');
-        panelRef.current?.classList.add('opacity-100', 'scale-100', 'translate-y-0');
-        panelRef.current?.classList.remove('opacity-0', 'scale-95', 'translate-y-4');
-      });
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        ref={backdropRef}
-        onClick={onClose}
-        className="fixed inset-0 z-100 bg-black/60 dark:bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-200"
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            className="fixed inset-0 z-100 bg-black/80 backdrop-blur-sm"
+          />
 
-      {/* Modal Container */}
-      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
-        <div
-          ref={panelRef}
-          onClick={(e) => e.stopPropagation()}
-          className={`relative w-full ${sizeClasses[size]} max-h-[70dvh] sm:max-h-150 bg-white dark:bg-[#111] border border-neutral-200 dark:border-white/10 rounded-3xl shadow-2xl pointer-events-auto flex flex-col overflow-hidden opacity-0 scale-95 translate-y-4 transition-all duration-300 ease-out ${className}`}
-        >
-          {/* Background Orbs */}
-          {showOrbs && (
-            <>
-              <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-            </>
-          )}
-
-          {children}
-        </div>
-      </div>
-    </>
+          {/* Modal Container */}
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4 pointer-events-none">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`relative w-full ${sizeClasses[size]} max-h-[70dvh] bg-modal-bg/90 border border-white/10 rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.5)] pointer-events-auto flex flex-col overflow-hidden backdrop-blur-xl no-text-shadow ${className}`}
+            >
+              {children}
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Key, Search, Loader2, Copy, Check } from 'lucide-react';
-import { BaseModal, ModalHeader } from '@/components/ui';
+import { WalletScreen, ModalHeader } from '@/components/ui';
 import { useSphereContext, useIdentity } from '@/sdk';
 import { getErrorMessage } from '@/sdk/errors';
 
@@ -28,11 +28,11 @@ function CopyableField({ label, value, prefix, copied, onCopy }: {
   const display = prefix ? `${prefix}${value}` : value;
   return (
     <div className="flex items-start gap-2 group">
-      <span className="text-xs text-neutral-500 dark:text-neutral-400 w-28 shrink-0 pt-0.5">{label}</span>
-      <span className="text-xs text-neutral-900 dark:text-white font-mono break-all flex-1">{display}</span>
+      <span className="text-xs text-[#ffe2cc] w-28 shrink-0 pt-0.5">{label}</span>
+      <span className="text-xs text-white font-mono break-all flex-1">{display}</span>
       <button
         onClick={onCopy}
-        className="opacity-0 group-hover:opacity-100 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-all shrink-0"
+        className="opacity-0 group-hover:opacity-100 p-1 text-neutral-400 hover:text-neutral-300 transition-all shrink-0"
       >
         {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
       </button>
@@ -118,14 +118,14 @@ export function LookupModal({ isOpen, onClose }: LookupModalProps) {
   const lookupFields = result ? toFields(result, 'lookup') : [];
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} size="sm" showOrbs={false}>
+    <WalletScreen isOpen={isOpen} onClose={onClose}>
       <ModalHeader title="My Public Keys" icon={Key} iconVariant="neutral" onClose={onClose} />
 
       <div className="overflow-y-auto flex-1">
         {/* My Keys */}
         {myFields.length > 0 && (
           <div className="p-4 space-y-2">
-            <div className="space-y-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700/30">
+            <div className="space-y-2 p-3 rounded-xl bg-white/4 border border-white/10">
               {myFields.map(({ label, value, key, displayPrefix }) => (
                 <CopyableField
                   key={key}
@@ -141,8 +141,8 @@ export function LookupModal({ isOpen, onClose }: LookupModalProps) {
         )}
 
         {/* Lookup */}
-        <div className="border-t border-neutral-200 dark:border-neutral-800/50 p-4 space-y-3">
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+        <div className="border-t border-white/6 p-4 space-y-3">
+          <p className="text-xs font-medium text-[#ffe2cc] uppercase tracking-wider">
             Lookup
           </p>
 
@@ -155,24 +155,24 @@ export function LookupModal({ isOpen, onClose }: LookupModalProps) {
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="@nametag, DIRECT://..., alpha1..."
-                className="w-full pl-8 pr-3 py-2.5 text-sm bg-neutral-100 dark:bg-neutral-800/50 text-neutral-900 dark:text-white placeholder-neutral-400 rounded-xl border border-neutral-200 dark:border-neutral-700/50 focus:outline-none focus:border-orange-500 transition-colors"
+                className="w-full pl-8 pr-3 py-2.5 text-sm bg-white/6 text-white placeholder-neutral-400 rounded-xl border border-white/10 focus:outline-none focus:border-brand-orange transition-colors"
               />
             </div>
             <button
               onClick={handleLookup}
               disabled={!query.trim() || isLoading || !ctx.resolve}
-              className="px-4 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-medium disabled:opacity-50 hover:bg-orange-600 transition-colors flex items-center"
+              className="px-4 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-medium disabled:opacity-50 hover:bg-brand-orange-dark transition-colors flex items-center"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             </button>
           </div>
 
           {error && (
-            <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
+            <p className="text-xs text-red-400">{error}</p>
           )}
 
           {lookupFields.length > 0 && (
-            <div className="space-y-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700/30">
+            <div className="space-y-2 p-3 rounded-xl bg-white/4 border border-white/10">
               {lookupFields.map(({ label, value, key, displayPrefix }) => (
                 <CopyableField
                   key={key}
@@ -187,6 +187,6 @@ export function LookupModal({ isOpen, onClose }: LookupModalProps) {
           )}
         </div>
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }
