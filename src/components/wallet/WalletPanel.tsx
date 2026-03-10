@@ -9,7 +9,7 @@ import { ConnectApprovalModal } from './modals/ConnectApprovalModal';
 import { ConnectIntentModal } from './modals/ConnectIntentModal';
 import { SendModal, type SendPrefill } from './modals/SendModal';
 
-const PANEL_SHELL = "bg-white dark:bg-neutral-900 backdrop-blur-xl rounded-none border-0 overflow-hidden h-full relative flex flex-col transition-all duration-500";
+const PANEL_SHELL = "bg-modal-bg/50 backdrop-blur-xl rounded-none border-0 overflow-hidden h-full relative flex flex-col transition-all duration-500 no-text-shadow";
 
 export function WalletPanel() {
   const [showBalances, setShowBalances] = useState(true);
@@ -90,7 +90,7 @@ export function WalletPanel() {
       setPendingSendIntentId(null);
     }
   };
-  const { identity, nametag, isLoading: isLoadingIdentity } = useIdentity();
+  const { identity, nametag, isLoading: isLoadingIdentity, isNametagLoading } = useIdentity();
   const { isLoading: _contextLoading } = useSphereContext();
 
   // Initialization error (e.g. IndexedDB timeout after retry)
@@ -102,12 +102,12 @@ export function WalletPanel() {
             <RefreshCw className="w-6 h-6 text-red-500" />
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-neutral-900 dark:text-white">Initialization error</p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">Please reload the extension</p>
+            <p className="text-sm font-medium text-white">Initialization error</p>
+            <p className="text-xs text-[#ffe2cc]">Please reload the extension</p>
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="px-5 py-2 bg-linear-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-xl shadow-lg shadow-orange-500/25 hover:scale-[1.02] active:scale-[0.98] transition-transform"
+            className="px-5 py-2 bg-linear-to-r from-brand-orange to-brand-orange-dark text-white text-sm font-mono font-medium rounded-xl shadow-lg shadow-brand-orange/25 hover:scale-[1.02] active:scale-[0.98] transition-transform"
           >
             Reload
           </button>
@@ -122,14 +122,14 @@ export function WalletPanel() {
       <div className={PANEL_SHELL}>
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <div className="relative w-20 h-20">
-            <div className="absolute inset-0 border-3 border-neutral-200 dark:border-neutral-800/50 rounded-full animate-spin" style={{ animationDuration: '3s' }} />
-            <div className="absolute inset-1.5 border-3 border-orange-500/30 rounded-full border-t-orange-500 border-r-orange-500 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '2s' }} />
-            <div className="absolute inset-3 bg-orange-500/20 rounded-full blur-xl" />
+            <div className="absolute inset-0 border-3 border-white/6 rounded-full animate-spin" style={{ animationDuration: '3s' }} />
+            <div className="absolute inset-1.5 border-3 border-brand-orange/30 rounded-full border-t-brand-orange border-r-brand-orange animate-spin" style={{ animationDirection: 'reverse', animationDuration: '2s' }} />
+            <div className="absolute inset-3 bg-brand-orange/20 rounded-full blur-xl" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-7 h-7 text-orange-500 dark:text-orange-400 animate-spin" />
+              <Loader2 className="w-7 h-7 text-brand-orange animate-spin" />
             </div>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+          <p className="text-xs text-[#ffe2cc] font-medium">
             Initializing wallet...
           </p>
         </div>
@@ -141,8 +141,8 @@ export function WalletPanel() {
   if (!walletExists) {
     return (
       <div className={PANEL_SHELL}>
-        <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-3xl bg-orange-500/5 dark:bg-orange-500/10" />
-        <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full blur-3xl bg-purple-500/5 dark:bg-purple-500/10" />
+        <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-3xl bg-brand-orange/10" />
+        <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full blur-3xl bg-purple-500/10" />
         <div className="flex-1 relative overflow-y-auto">
           <CreateWalletFlow />
         </div>
@@ -156,14 +156,14 @@ export function WalletPanel() {
       <div className={PANEL_SHELL}>
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <div className="relative w-20 h-20">
-            <div className="absolute inset-0 border-3 border-neutral-200 dark:border-neutral-800/50 rounded-full animate-spin" style={{ animationDuration: '3s' }} />
-            <div className="absolute inset-1.5 border-3 border-orange-500/30 rounded-full border-t-orange-500 border-r-orange-500 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '2s' }} />
-            <div className="absolute inset-3 bg-orange-500/20 rounded-full blur-xl" />
+            <div className="absolute inset-0 border-3 border-white/6 rounded-full animate-spin" style={{ animationDuration: '3s' }} />
+            <div className="absolute inset-1.5 border-3 border-brand-orange/30 rounded-full border-t-brand-orange border-r-brand-orange animate-spin" style={{ animationDirection: 'reverse', animationDuration: '2s' }} />
+            <div className="absolute inset-3 bg-brand-orange/20 rounded-full blur-xl" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-7 h-7 text-orange-500 dark:text-orange-400 animate-spin" />
+              <Loader2 className="w-7 h-7 text-brand-orange animate-spin" />
             </div>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+          <p className="text-xs text-[#ffe2cc] font-medium">
             Loading identity...
           </p>
         </div>
@@ -175,8 +175,8 @@ export function WalletPanel() {
     <div className={PANEL_SHELL}>
 
       {/* Background Gradients - Orange theme */}
-      <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-3xl bg-orange-500/5 dark:bg-orange-500/10" />
-      <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full blur-3xl bg-purple-500/5 dark:bg-purple-500/10" />
+      <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-3xl bg-brand-orange/10" />
+      <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full blur-3xl bg-purple-500/10" />
 
       {/* TOP BAR: Title & Actions */}
       <div className="p-3 sm:p-4 pb-2 relative shrink-0">
@@ -186,11 +186,11 @@ export function WalletPanel() {
 
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="text-sm sm:text-base text-neutral-900 dark:text-white font-medium tracking-wide">Wallet</span>
-                {!nametag && (
+                <span className="text-sm sm:text-base text-white font-medium tracking-wide">Wallet</span>
+                {!nametag && !isNametagLoading && (
                   <button
                     onClick={() => setIsNametagModalOpen(true)}
-                    className="flex items-center gap-1 px-2 py-0.5 text-[10px] sm:text-xs bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-lg transition-colors border border-orange-500/20"
+                    className="flex items-center gap-1 px-2 py-0.5 text-[10px] sm:text-xs bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange rounded-lg transition-colors border border-brand-orange/20"
                   >
                     <Tag className="w-3 h-3" />
                     <span>Register ID</span>
@@ -204,14 +204,14 @@ export function WalletPanel() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsHistoryOpen(true)}
-              className="p-1.5 sm:p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 rounded-lg transition-colors text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+              className="p-1.5 sm:p-2 hover:bg-white/6 rounded-lg transition-colors text-neutral-400 hover:text-white"
               title="Transaction history"
             >
               <Clock className="w-5 h-5" />
             </button>
             <button
               onClick={() => setIsRequestsOpen(true)}
-              className="relative p-1.5 sm:p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 rounded-lg transition-colors text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+              className="relative p-1.5 sm:p-2 hover:bg-white/6 rounded-lg transition-colors text-neutral-400 hover:text-white"
               title="Payment requests"
             >
               <Bell className="w-5 h-5" />
@@ -219,7 +219,7 @@ export function WalletPanel() {
             </button>
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-1.5 sm:p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 rounded-lg transition-colors text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+              className="p-1.5 sm:p-2 hover:bg-white/6 rounded-lg transition-colors text-neutral-400 hover:text-white"
               title="Settings"
             >
               <MoreVertical className="w-5 h-5" />

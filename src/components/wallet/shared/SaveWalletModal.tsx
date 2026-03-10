@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Shield, AlertCircle, FileJson } from 'lucide-react';
-import { BaseModal } from '@/components/ui';
+import { WalletScreen } from '@/components/ui';
 
 interface SaveWalletModalProps {
   show: boolean;
@@ -37,13 +37,13 @@ export function SaveWalletModal({ show, onConfirm, onCancel, hasMnemonic }: Save
   };
 
   return (
-    <BaseModal isOpen={show} onClose={onCancel} size="sm" showOrbs={false}>
+    <WalletScreen isOpen={show} onClose={onCancel}>
       <div className="flex flex-col items-center text-center mb-6 px-6 pt-6">
         <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
           <Shield className="w-6 h-6 text-blue-500" />
         </div>
-        <h3 className="text-neutral-900 dark:text-white text-xl font-bold mb-2">Backup Wallet</h3>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        <h3 className="text-white text-xl font-bold mb-2">Backup Wallet</h3>
+        <p className="text-xs text-[#ffe2cc]">
           Export your wallet keys to a JSON file. Keep this safe!
         </p>
       </div>
@@ -69,7 +69,7 @@ export function SaveWalletModal({ show, onConfirm, onCancel, hasMnemonic }: Save
           placeholder="Filename"
           value={filename}
           onChange={(e) => setFilename(e.target.value)}
-          className="w-full mb-3 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded text-neutral-800 dark:text-neutral-200 placeholder-neutral-400 border border-neutral-200 dark:border-neutral-700 focus:border-blue-500 outline-none transition-colors"
+          className="w-full mb-3 px-3 py-2 bg-white/6 rounded text-neutral-200 placeholder-neutral-400 border border-white/10 focus:border-blue-500 outline-none transition-colors"
         />
 
         <label className="text-xs text-neutral-500 mb-1 block">Encryption Password (Optional)</label>
@@ -78,7 +78,7 @@ export function SaveWalletModal({ show, onConfirm, onCancel, hasMnemonic }: Save
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-3 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded text-neutral-800 dark:text-neutral-200 placeholder-neutral-400 border border-neutral-200 dark:border-neutral-700 focus:border-blue-500 outline-none transition-colors"
+          className="w-full mb-3 px-3 py-2 bg-white/6 rounded text-neutral-200 placeholder-neutral-400 border border-white/10 focus:border-blue-500 outline-none transition-colors"
         />
 
         <input
@@ -86,12 +86,12 @@ export function SaveWalletModal({ show, onConfirm, onCancel, hasMnemonic }: Save
           type="password"
           value={passwordConfirm}
           onChange={(e) => setPasswordConfirm(e.target.value)}
-          className="w-full mb-4 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded text-neutral-800 dark:text-neutral-200 placeholder-neutral-400 border border-neutral-200 dark:border-neutral-700 focus:border-blue-500 outline-none transition-colors"
+          className="w-full mb-4 px-3 py-2 bg-white/6 rounded text-neutral-200 placeholder-neutral-400 border border-white/10 focus:border-blue-500 outline-none transition-colors"
         />
 
         {error && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-900/50 rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
             <span className="text-red-400 text-sm">{error}</span>
           </div>
         )}
@@ -99,7 +99,7 @@ export function SaveWalletModal({ show, onConfirm, onCancel, hasMnemonic }: Save
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 py-2 bg-neutral-200 dark:bg-neutral-700 rounded text-neutral-700 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors active:scale-[0.98]"
+            className="flex-1 py-2 bg-white/8 rounded text-white hover:bg-white/10 transition-colors active:scale-[0.98]"
           >
             Cancel
           </button>
@@ -111,6 +111,6 @@ export function SaveWalletModal({ show, onConfirm, onCancel, hasMnemonic }: Save
           </button>
         </div>
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }

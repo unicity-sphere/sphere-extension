@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Settings, Download, LogOut, Key, Link } from 'lucide-react';
-import { BaseModal, ModalHeader, MenuButton } from '@/components/ui';
+import { WalletScreen, ModalHeader, MenuButton } from '@/components/ui';
 import { LookupModal } from './LookupModal';
 import { ConnectedSitesModal } from './ConnectedSitesModal';
 
@@ -22,7 +22,7 @@ export function SettingsModal({
 
   return (
     <>
-      <BaseModal isOpen={isOpen} onClose={onClose} size="sm" showOrbs={false}>
+      <WalletScreen isOpen={isOpen} onClose={onClose}>
         <ModalHeader title="Settings" icon={Settings} iconVariant="neutral" onClose={onClose} />
 
         <div className="p-4 space-y-2 overflow-y-auto">
@@ -69,7 +69,7 @@ export function SettingsModal({
             }}
           />
         </div>
-      </BaseModal>
+      </WalletScreen>
 
       <LookupModal
         isOpen={isLookupOpen}

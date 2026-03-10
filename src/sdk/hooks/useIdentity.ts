@@ -3,7 +3,7 @@ import { useSphereContext } from '../context';
 import { SPHERE_KEYS } from '../queryKeys';
 
 export function useIdentity() {
-  const { getIdentity, isUnlocked, identity, nametag } = useSphereContext();
+  const { getIdentity, isUnlocked, identity, nametag, isNametagLoading } = useSphereContext();
 
   const { data, isLoading } = useQuery({
     queryKey: SPHERE_KEYS.identity.current,
@@ -23,6 +23,7 @@ export function useIdentity() {
   return {
     identity: resolved,
     isLoading,
+    isNametagLoading,
     nametag: resolvedNametag,
     directAddress,
     l1Address,

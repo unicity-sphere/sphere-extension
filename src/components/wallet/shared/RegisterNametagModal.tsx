@@ -115,18 +115,18 @@ export function RegisterNametagModal({ isOpen, onClose }: RegisterNametagModalPr
         onClick={onClose}
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden"
+        <div className="w-full max-w-sm bg-white/4 rounded-2xl shadow-2xl border border-white/6 overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="flex items-center justify-between p-4 border-b border-white/6">
             <div className="flex items-center gap-2">
-              <Tag className="w-5 h-5 text-orange-500" />
-              <span className="text-base font-semibold text-neutral-900 dark:text-white">Register Unicity ID</span>
+              <Tag className="w-5 h-5 text-brand-orange" />
+              <span className="text-base font-semibold text-white">Register Unicity ID</span>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-white/6 transition-colors"
             >
               <X className="w-4 h-4 text-neutral-500" />
             </button>
@@ -134,7 +134,7 @@ export function RegisterNametagModal({ isOpen, onClose }: RegisterNametagModalPr
 
           {/* Content */}
           <div className="p-4 space-y-4">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm text-[#ffe2cc]">
               Choose a unique ID to receive tokens easily without sharing long addresses.
             </p>
 
@@ -148,8 +148,8 @@ export function RegisterNametagModal({ isOpen, onClose }: RegisterNametagModalPr
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 z-10">
                     {availability === 'checking' && <Loader2 className="w-3.5 h-3.5 text-neutral-400 animate-spin" />}
                     {availability === 'available' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
-                    {availability === 'taken' && <AlertCircle className="w-3.5 h-3.5 text-red-500" />}
-                    <span className="text-neutral-400 dark:text-neutral-500 group-focus-within:text-orange-500 dark:group-focus-within:text-orange-400 transition-colors text-sm font-medium">
+                    {availability === 'taken' && <AlertCircle className="w-3.5 h-3.5 text-red-400" />}
+                    <span className="text-neutral-500 group-focus-within:text-brand-orange transition-colors text-sm font-medium">
                       @unicity
                     </span>
                   </div>
@@ -160,12 +160,12 @@ export function RegisterNametagModal({ isOpen, onClose }: RegisterNametagModalPr
                     onKeyDown={handleKeyDown}
                     placeholder="id"
                     autoFocus
-                    className={`w-full bg-neutral-100 dark:bg-neutral-800/50 border-2 rounded-xl py-3 pl-4 pr-28 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-600 focus:outline-none focus:bg-white dark:focus:bg-neutral-800 transition-all ${
+                    className={`w-full bg-white/6 border-2 rounded-xl py-3 pl-4 pr-28 text-sm text-white placeholder-neutral-500 focus:outline-none focus:bg-white/6 transition-all ${
                       availability === 'taken'
-                        ? 'border-red-400 dark:border-red-500/50 focus:border-red-500'
+                        ? 'border-red-500/50 focus:border-red-500'
                         : availability === 'available'
-                          ? 'border-emerald-400 dark:border-emerald-500/50 focus:border-emerald-500'
-                          : 'border-neutral-200 dark:border-neutral-700/50 focus:border-orange-500'
+                          ? 'border-emerald-500/50 focus:border-emerald-500'
+                          : 'border-white/10 focus:border-brand-orange'
                     }`}
                   />
                 </div>
@@ -173,12 +173,12 @@ export function RegisterNametagModal({ isOpen, onClose }: RegisterNametagModalPr
                 {/* Availability status -- fixed height to prevent layout shift */}
                 <div className="h-4 -mt-2">
                   {availability === 'taken' && !error && (
-                    <p className="text-red-500 dark:text-red-400 text-xs">
+                    <p className="text-red-400 text-xs">
                       @{nametagInput} is already taken
                     </p>
                   )}
                   {availability === 'available' && (
-                    <p className="text-emerald-500 dark:text-emerald-400 text-xs">
+                    <p className="text-emerald-400 text-xs">
                       @{nametagInput} is available
                     </p>
                   )}
@@ -187,7 +187,7 @@ export function RegisterNametagModal({ isOpen, onClose }: RegisterNametagModalPr
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit}
-                  className="w-full py-3 px-4 rounded-xl bg-linear-to-r from-orange-500 to-orange-600 text-white text-sm font-bold shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:from-orange-400 hover:to-orange-500 transition-all"
+                  className="w-full py-3 px-4 rounded-xl bg-linear-to-r from-brand-orange to-brand-orange-dark text-white text-sm font-bold shadow-lg shadow-brand-orange/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:from-brand-orange/90 hover:to-brand-orange-dark/90 transition-all"
                 >
                   {isBusy ? (
                     <>
@@ -203,7 +203,7 @@ export function RegisterNametagModal({ isOpen, onClose }: RegisterNametagModalPr
                 </button>
 
                 {error && (
-                  <p className="text-red-500 dark:text-red-400 text-xs bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
+                  <p className="text-red-400 text-xs bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
                     {error}
                   </p>
                 )}

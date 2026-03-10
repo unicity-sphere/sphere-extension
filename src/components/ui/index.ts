@@ -1,5 +1,6 @@
 // Modal components
 export { BaseModal } from './BaseModal';
+export { WalletScreen } from './WalletScreen';
 export { ModalHeader } from './ModalHeader';
 
 // Feedback components

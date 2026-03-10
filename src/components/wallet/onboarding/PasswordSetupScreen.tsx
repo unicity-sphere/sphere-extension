@@ -39,18 +39,18 @@ export function PasswordSetupScreen({
     <div className="relative z-10 w-full max-w-90">
       {/* Icon */}
       <div className="relative w-18 h-18 mx-auto mb-6">
-        <div className="absolute inset-0 bg-blue-500/30 rounded-2xl blur-xl" />
-        <div className="relative w-full h-full rounded-2xl bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-xl shadow-blue-500/25">
+        <div className="absolute inset-0 bg-brand-orange/30 rounded-2xl blur-xl" />
+        <div className="relative w-full h-full rounded-2xl bg-linear-to-br from-brand-orange to-brand-orange-dark flex items-center justify-center shadow-xl shadow-brand-orange/25">
           <Lock className="w-9 h-9 text-white" />
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 tracking-tight">
+      <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
         Set Encryption Password
       </h2>
-      <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-7 mx-auto leading-relaxed">
+      <p className="text-[#ffe2cc] text-sm mb-7 mx-auto leading-relaxed">
         This password encrypts your wallet locally.{" "}
-        <span className="text-blue-500 dark:text-blue-400 font-semibold">
+        <span className="text-brand-orange font-semibold">
           You'll need it each time you open the extension.
         </span>
       </p>
@@ -65,13 +65,13 @@ export function PasswordSetupScreen({
             onKeyDown={handleKeyDown}
             placeholder="Create password (min 8 characters)"
             disabled={isBusy}
-            className="w-full bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-xl py-3 pl-3 pr-10 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-600 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-neutral-800 transition-all disabled:opacity-50"
+            className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl py-3 pl-3 pr-10 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-brand-orange focus:bg-[#1a1a1a] transition-all disabled:opacity-50"
             autoFocus
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-300 transition-colors"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -86,12 +86,12 @@ export function PasswordSetupScreen({
             onKeyDown={handleKeyDown}
             placeholder="Confirm password"
             disabled={isBusy}
-            className="w-full bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-xl py-3 pl-3 pr-10 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-600 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-neutral-800 transition-all disabled:opacity-50"
+            className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl py-3 pl-3 pr-10 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-brand-orange focus:bg-[#1a1a1a] transition-all disabled:opacity-50"
           />
           <button
             type="button"
             onClick={() => setShowConfirm(!showConfirm)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-300 transition-colors"
             tabIndex={-1}
           >
             {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -104,7 +104,7 @@ export function PasswordSetupScreen({
         <button
           onClick={onBack}
           disabled={isBusy}
-          className="flex-1 py-3.5 px-5 rounded-xl bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-sm font-bold border border-neutral-200 dark:border-neutral-700/50 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-200 dark:hover:bg-neutral-700/50 transition-colors"
+          className="flex-1 py-3.5 px-5 rounded-xl bg-white/6 text-neutral-300 text-sm font-bold border border-white/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -113,9 +113,9 @@ export function PasswordSetupScreen({
         <button
           onClick={onConfirm}
           disabled={isBusy || !password || !confirmPassword}
-          className="flex-2 relative py-3.5 px-5 rounded-xl bg-linear-to-r from-blue-500 to-blue-600 text-white text-sm font-bold shadow-xl shadow-blue-500/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
+          className="flex-2 relative py-3.5 px-5 rounded-xl bg-linear-to-r from-brand-orange to-brand-orange-dark text-white text-sm font-bold shadow-xl shadow-brand-orange/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
         >
-          <div className="absolute inset-0 bg-linear-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-linear-to-r from-brand-orange to-brand-orange-dark opacity-0 group-hover:opacity-100 transition-opacity" />
           <span className="relative z-10 flex items-center gap-2">
             {isBusy ? (
               <>
@@ -133,7 +133,7 @@ export function PasswordSetupScreen({
       </div>
 
       {error && (
-        <p className="mt-3 text-red-500 dark:text-red-400 text-xs bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
+        <p className="mt-3 text-red-400 text-xs bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
           {error}
         </p>
       )}

@@ -1,12 +1,13 @@
 import { Loader2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { ButtonHTMLAttributes } from 'react';
+import { motion } from 'framer-motion';
+import type { HTMLMotionProps } from 'framer-motion';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success';
 type ButtonSize = 'sm' | 'md' | 'lg';
 type IconPosition = 'left' | 'right';
 
-interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   /** Icon */
@@ -24,8 +25,8 @@ interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'chi
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/25',
-  secondary: 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-white',
+  primary: 'bg-brand-orange hover:bg-brand-orange-dark text-white shadow-lg shadow-brand-orange/25',
+  secondary: 'bg-white/6 hover:bg-white/10 text-white border border-white/10',
   danger: 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/25',
   success: 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/25',
 };
@@ -52,15 +53,16 @@ export function Button({
   const isDisabled = disabled || loading;
 
   return (
-    <button
+    <motion.button
       disabled={isDisabled}
+      whileHover={isDisabled ? undefined : { scale: 1.02 }}
+      whileTap={isDisabled ? undefined : { scale: 0.98 }}
       className={`
         ${variantClasses[variant]}
         ${sizeClasses[size]}
         ${fullWidth ? 'w-full' : ''}
-        font-semibold flex items-center justify-center gap-2 transition-colors
+        font-mono font-semibold flex items-center justify-center gap-2 transition-colors
         disabled:opacity-50 disabled:cursor-not-allowed
-        active:scale-[0.98]
         ${className}
       `}
       {...props}
@@ -77,7 +79,7 @@ export function Button({
           {Icon && iconPosition === 'right' && <Icon className="w-5 h-5" />}
         </>
       )}
-    </button>
+    </motion.button>
   );
 }
 

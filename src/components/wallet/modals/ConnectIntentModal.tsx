@@ -16,7 +16,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { MessageSquare, Key, Zap, Loader2 } from 'lucide-react';
 import { ERROR_CODES } from '@unicitylabs/sphere-sdk/connect';
 import { getErrorMessage } from '@/sdk/errors';
-import { BaseModal } from '@/components/ui/BaseModal';
+import { WalletScreen } from '@/components/ui/WalletScreen';
 import { ModalHeader } from '@/components/ui/ModalHeader';
 import { Button } from '@/components/ui/Button';
 import { SendModal } from './SendModal';
@@ -172,18 +172,18 @@ export function ConnectIntentModal({ isOpen, onClose }: ConnectIntentModalProps)
 
   // ── unknown ───────────────────────────────────────────────────────────────
   return (
-    <BaseModal isOpen={true} onClose={handleClose} size="sm">
+    <WalletScreen isOpen={true} onClose={handleClose}>
       <ModalHeader title="Unsupported Request" onClose={handleClose} />
       <div className="p-6 text-center">
         <p className="text-neutral-500 mb-1 text-sm">Action not supported:</p>
-        <code className="text-neutral-700 dark:text-neutral-300 text-sm bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded">
+        <code className="text-neutral-300 text-sm bg-white/6 px-2 py-0.5 rounded">
           {action}
         </code>
       </div>
-      <div className="p-4 border-t border-neutral-200 dark:border-white/10">
+      <div className="p-4 border-t border-white/10">
         <Button variant="secondary" fullWidth onClick={handleClose}>Dismiss</Button>
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }
 
@@ -278,11 +278,11 @@ function L1SendIntentModal({
   ];
 
   return (
-    <BaseModal isOpen={isOpen} onClose={handleClose} size="sm">
+    <WalletScreen isOpen={isOpen} onClose={handleClose}>
       <ModalHeader title="L1 Send Request" onClose={handleClose} />
       <div className="p-4 space-y-4">
         <p className="text-xs text-neutral-500">
-          <span className="font-medium text-neutral-700 dark:text-neutral-300">{dappName}</span> requests an L1 transfer
+          <span className="font-medium text-neutral-300">{dappName}</span> requests an L1 transfer
         </p>
 
         {/* Vesting mode selector */}
@@ -292,16 +292,16 @@ function L1SendIntentModal({
             {vestingOptions.map((opt) => {
               const isSelected = vestingMode === opt.value;
               const colorMap = {
-                blue:   isSelected ? 'border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400',
-                green:  isSelected ? 'border-green-500 bg-green-500/10 text-green-600 dark:text-green-400' : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400',
-                orange: isSelected ? 'border-orange-500 bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400',
+                blue:   isSelected ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-white/10 text-[#ffe2cc]',
+                green:  isSelected ? 'border-green-500 bg-green-500/10 text-green-400' : 'border-white/10 text-[#ffe2cc]',
+                orange: isSelected ? 'border-brand-orange bg-brand-orange/10 text-brand-orange' : 'border-white/10 text-[#ffe2cc]',
               };
               return (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setVestingMode(opt.value)}
-                  className={`flex-1 py-2 px-2 rounded-xl border-2 transition-all bg-neutral-100 dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600 ${colorMap[opt.color as keyof typeof colorMap]}`}
+                  className={`flex-1 py-2 px-2 rounded-xl border-2 transition-all bg-white/4 hover:border-white/8 ${colorMap[opt.color as keyof typeof colorMap]}`}
                 >
                   <div className="text-xs font-semibold">{opt.label}</div>
                   <div className="text-[10px] font-mono mt-0.5">
@@ -321,7 +321,7 @@ function L1SendIntentModal({
           <input
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-xl py-2.5 px-3 text-neutral-900 dark:text-white font-mono text-xs outline-none focus:border-orange-500"
+            className="w-full bg-white/4 border border-white/10 rounded-xl py-2.5 px-3 text-white font-mono text-xs outline-none focus:border-brand-orange"
           />
         </div>
 
@@ -339,20 +339,20 @@ function L1SendIntentModal({
             inputMode="decimal"
             value={amount}
             onChange={(e) => { const v = e.target.value; if (v === '' || /^\d*\.?\d*$/.test(v)) setAmount(v); }}
-            className="w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-xl py-2.5 px-3 text-neutral-900 dark:text-white font-mono outline-none focus:border-orange-500 text-lg"
+            className="w-full bg-white/4 border border-white/10 rounded-xl py-2.5 px-3 text-white font-mono outline-none focus:border-brand-orange text-lg"
           />
         </div>
 
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
       </div>
 
-      <div className="p-4 flex gap-2 border-t border-neutral-200 dark:border-white/10">
+      <div className="p-4 flex gap-2 border-t border-white/10">
         <Button variant="secondary" fullWidth onClick={handleClose} disabled={loading}>Cancel</Button>
         <Button variant="primary" fullWidth onClick={handleSend} loading={loading} disabled={!to || !amount}>
           Send
         </Button>
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }
 
@@ -410,18 +410,18 @@ function DmIntentModal({
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={handleClose} size="sm">
+    <WalletScreen isOpen={isOpen} onClose={handleClose}>
       <ModalHeader title="DM Request" icon={MessageSquare} onClose={handleClose} />
       <div className="p-4 space-y-4">
         <p className="text-xs text-neutral-500">
-          <span className="font-medium text-neutral-700 dark:text-neutral-300">{dappName}</span> wants to send a DM
+          <span className="font-medium text-neutral-300">{dappName}</span> wants to send a DM
         </p>
 
-        <div className="bg-neutral-100 dark:bg-neutral-900 rounded-xl p-4 border border-neutral-200 dark:border-white/10">
+        <div className="bg-white/4 rounded-xl p-4 border border-white/10">
           <div className="text-xs text-neutral-500 mb-1">
-            To: <span className="text-neutral-700 dark:text-neutral-300 font-medium">{to}</span>
+            To: <span className="text-neutral-300 font-medium">{to}</span>
           </div>
-          <div className="bg-white dark:bg-neutral-800 rounded-lg p-3 text-neutral-700 dark:text-neutral-300 text-sm">
+          <div className="bg-white/6 rounded-lg p-3 text-neutral-300 text-sm">
             {message}
           </div>
         </div>
@@ -433,21 +433,21 @@ function DmIntentModal({
             onChange={(e) => setAutoApprove(e.target.checked)}
             className="w-4 h-4 rounded accent-orange-500"
           />
-          <span className="text-sm text-neutral-600 dark:text-neutral-400">
+          <span className="text-sm text-[#ffe2cc]">
             Allow this dApp to send DMs without confirmation
           </span>
         </label>
 
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
       </div>
 
-      <div className="p-4 flex gap-2 border-t border-neutral-200 dark:border-white/10">
+      <div className="p-4 flex gap-2 border-t border-white/10">
         <Button variant="secondary" fullWidth onClick={handleClose} disabled={loading}>Cancel</Button>
         <Button variant="primary" fullWidth onClick={handleSend} loading={loading} disabled={loading}>
           {loading ? 'Sending…' : 'Send DM'}
         </Button>
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }
 
@@ -496,36 +496,36 @@ function SignMessageIntentModal({
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={handleClose} size="sm">
+    <WalletScreen isOpen={isOpen} onClose={handleClose}>
       <ModalHeader title="Sign Message" icon={Key} onClose={handleClose} />
       <div className="p-4 space-y-4">
         <p className="text-xs text-neutral-500">
-          <span className="font-medium text-neutral-700 dark:text-neutral-300">{dappName}</span> requests a message signature
+          <span className="font-medium text-neutral-300">{dappName}</span> requests a message signature
         </p>
 
         <div>
           <label className="text-xs text-neutral-500 mb-1 block">Message</label>
-          <div className="bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-xl p-3 text-neutral-700 dark:text-neutral-300 text-sm font-mono break-all max-h-40 overflow-y-auto">
+          <div className="bg-white/4 border border-white/10 rounded-xl p-3 text-neutral-300 text-sm font-mono break-all max-h-40 overflow-y-auto">
             {message}
           </div>
         </div>
 
         <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-2">
           <Zap size={14} className="text-amber-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-neutral-600 dark:text-neutral-400">
+          <p className="text-xs text-[#ffe2cc]">
             Signing this message proves ownership of your wallet to the dApp.
           </p>
         </div>
 
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
       </div>
 
-      <div className="p-4 flex gap-2 border-t border-neutral-200 dark:border-white/10">
+      <div className="p-4 flex gap-2 border-t border-white/10">
         <Button variant="secondary" fullWidth onClick={handleClose} disabled={loading}>Cancel</Button>
         <Button variant="primary" fullWidth onClick={handleSign} loading={loading} disabled={loading}>
           Sign
         </Button>
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }

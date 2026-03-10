@@ -56,16 +56,16 @@ export function RestoreScreen({
     <div className="relative z-10 w-full max-w-95">
       {/* Icon */}
       <div className="relative w-18 h-18 mx-auto mb-6">
-        <div className="absolute inset-0 bg-blue-500/30 rounded-2xl blur-xl" />
-        <div className="relative w-full h-full rounded-2xl bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-xl shadow-blue-500/25">
+        <div className="absolute inset-0 bg-brand-orange/30 rounded-2xl blur-xl" />
+        <div className="relative w-full h-full rounded-2xl bg-linear-to-br from-brand-orange to-brand-orange-dark flex items-center justify-center shadow-xl shadow-brand-orange/25">
           <KeyRound className="w-9 h-9 text-white" />
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 tracking-tight">
+      <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
         Restore Wallet
       </h2>
-      <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 mx-auto leading-relaxed">
+      <p className="text-[#ffe2cc] text-sm mb-6 mx-auto leading-relaxed">
         Enter your 12-word recovery phrase to restore your wallet
       </p>
 
@@ -73,7 +73,7 @@ export function RestoreScreen({
       <div className="grid grid-cols-3 gap-2 mb-5">
         {Array.from({ length: 12 }).map((_, index) => (
           <div key={`seed-input-${index}`} className="relative">
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-neutral-400 dark:text-neutral-600 font-medium z-10">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-neutral-500 font-medium z-10">
               {index + 1}.
             </span>
             <input
@@ -83,7 +83,7 @@ export function RestoreScreen({
               onPaste={handlePaste}
               onKeyDown={(e) => handleKeyDown(e, index)}
               placeholder="word"
-              className="w-full bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg py-2.5 pl-8 pr-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-600 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-neutral-800 transition-all"
+              className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg py-2.5 pl-8 pr-2 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-brand-orange focus:bg-[#1a1a1a] transition-all"
               autoFocus={index === 0}
             />
           </div>
@@ -95,7 +95,7 @@ export function RestoreScreen({
         <button
           onClick={onBack}
           disabled={isBusy}
-          className="flex-1 py-3.5 px-5 rounded-xl bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-sm font-bold border border-neutral-200 dark:border-neutral-700/50 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-200 dark:hover:bg-neutral-700/50 transition-colors"
+          className="flex-1 py-3.5 px-5 rounded-xl bg-white/6 text-neutral-300 text-sm font-bold border border-white/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -104,9 +104,9 @@ export function RestoreScreen({
         <button
           onClick={onRestore}
           disabled={isBusy || !isComplete}
-          className="flex-2 relative py-3.5 px-5 rounded-xl bg-linear-to-r from-blue-500 to-blue-600 text-white text-sm font-bold shadow-xl shadow-blue-500/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
+          className="flex-2 relative py-3.5 px-5 rounded-xl bg-linear-to-r from-brand-orange to-brand-orange-dark text-white text-sm font-bold shadow-xl shadow-brand-orange/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
         >
-          <div className="absolute inset-0 bg-linear-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-linear-to-r from-brand-orange to-brand-orange-dark opacity-0 group-hover:opacity-100 transition-opacity" />
           <span className="relative z-10 flex items-center gap-2">
             {isBusy ? (
               <>
@@ -124,7 +124,7 @@ export function RestoreScreen({
       </div>
 
       {error && (
-        <p className="mt-3 text-red-500 dark:text-red-400 text-xs bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
+        <p className="mt-3 text-red-400 text-xs bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
           {error}
         </p>
       )}

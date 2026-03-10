@@ -32,6 +32,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
   const [error, setError] = useState<string | null>(null);
   const [identity, setIdentity] = useState<WalletIdentity | null>(null);
   const [nametag, setNametag] = useState<string | null>(null);
+  const [isNametagLoading, setIsNametagLoading] = useState(false);
   const updateCallbacksRef = useRef<Set<() => void>>(new Set());
 
   // Configure TokenRegistry singleton for popup bundle (same as sphere web app)
@@ -84,6 +85,41 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
     })();
   }, []);
 
+  // Poll for nametag when wallet is unlocked but nametag not yet loaded.
+  // SDK loads nametag from Nostr relay asynchronously after Sphere.init(),
+  // so it may not be available on the first request.
+  useEffect(() => {
+    if (!isUnlocked || nametag || isLoading) return;
+
+    setIsNametagLoading(true);
+    let cancelled = false;
+    let attempt = 0;
+    const maxAttempts = 8; // ~8 seconds total
+
+    const poll = async () => {
+      while (!cancelled && attempt < maxAttempts) {
+        attempt++;
+        try {
+          const ntRes = await sendMessage<{ nametag?: { nametag: string } }>({ type: 'POPUP_GET_MY_NAMETAG' });
+          if (ntRes.nametag?.nametag) {
+            if (!cancelled) {
+              setNametag(ntRes.nametag.nametag);
+              setIdentity(prev => prev ? { ...prev, nametag: ntRes.nametag!.nametag } : prev);
+              setIsNametagLoading(false);
+            }
+            return;
+          }
+        } catch { /* ignore, retry */ }
+        // Wait 1s before next attempt
+        await new Promise(r => setTimeout(r, 1000));
+      }
+      if (!cancelled) setIsNametagLoading(false);
+    };
+
+    poll();
+    return () => { cancelled = true; };
+  }, [isUnlocked, nametag, isLoading]);
+
   // Listen for background broadcasts
   useEffect(() => {
     const listener = (message: { type?: string }) => {
@@ -131,20 +167,30 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
 
   const unlockWallet = useCallback(async (password: string) => {
     const res = await sendMessage<{ identity?: IdentityPayload }>({ type: 'POPUP_UNLOCK_WALLET', password });
-    setIsUnlocked(true);
+
+    // Fetch nametag BEFORE showing the wallet UI to avoid "Register ID" flash
+    let resolvedNametag: string | null = null;
+    try {
+      const ntRes = await sendMessage<{ nametag?: { nametag: string } }>({ type: 'POPUP_GET_MY_NAMETAG' });
+      if (ntRes.nametag) resolvedNametag = ntRes.nametag.nametag;
+    } catch { /* non-fatal — nametag fetch failed, continue without it */ }
+
+    // Also check identity label as fallback
+    const labelNametag = res.identity?.label?.startsWith('@')
+      ? res.identity.label.slice(1)
+      : null;
+    const finalNametag = resolvedNametag ?? labelNametag;
+
+    if (finalNametag) setNametag(finalNametag);
     if (res.identity) {
       setIdentity({
         chainPubkey: res.identity.publicKey,
         l1Address: res.identity.id,
         directAddress: res.identity.id,
-        nametag: res.identity.label?.startsWith('@') ? res.identity.label.slice(1) : undefined,
+        nametag: finalNametag ?? undefined,
       });
     }
-    // Fetch nametag
-    try {
-      const ntRes = await sendMessage<{ nametag?: { nametag: string } }>({ type: 'POPUP_GET_MY_NAMETAG' });
-      if (ntRes.nametag) setNametag(ntRes.nametag.nametag);
-    } catch { /* non-fatal — nametag fetch failed, continue without it */ }
+    setIsUnlocked(true);
   }, []);
 
   const lockWallet = useCallback(async () => {
@@ -262,6 +308,7 @@ export function ExtensionSphereProvider({ children }: { children: React.ReactNod
     error,
     identity,
     nametag,
+    isNametagLoading,
     createWallet,
     importWallet,
     unlockWallet,

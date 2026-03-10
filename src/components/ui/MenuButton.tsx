@@ -24,12 +24,12 @@ interface MenuButtonProps {
 }
 
 const colorClasses: Record<MenuButtonColor, { bg: string; icon: string }> = {
-  blue: { bg: 'bg-blue-500/10', icon: 'text-blue-500' },
-  green: { bg: 'bg-green-500/10', icon: 'text-green-500' },
-  red: { bg: 'bg-red-500/10', icon: 'text-red-500' },
-  orange: { bg: 'bg-orange-500/10', icon: 'text-orange-500' },
-  purple: { bg: 'bg-purple-500/10', icon: 'text-purple-500' },
-  neutral: { bg: 'bg-neutral-500/10', icon: 'text-neutral-500' },
+  blue: { bg: 'bg-blue-500/10', icon: 'text-blue-400' },
+  green: { bg: 'bg-green-500/10', icon: 'text-green-400' },
+  red: { bg: 'bg-red-500/10', icon: 'text-red-400' },
+  orange: { bg: 'bg-brand-orange/10', icon: 'text-brand-orange' },
+  purple: { bg: 'bg-purple-500/10', icon: 'text-purple-400' },
+  neutral: { bg: 'bg-white/6', icon: 'text-neutral-400' },
 };
 
 export function MenuButton({
@@ -48,29 +48,29 @@ export function MenuButton({
     <button
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      className={`w-full flex items-center gap-4 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl transition-colors group ${
+      className={`w-full flex items-center gap-4 p-4 bg-white/4 rounded-2xl transition-colors group ${
         disabled
           ? 'opacity-50 cursor-not-allowed'
           : danger
-            ? 'hover:bg-red-50 dark:hover:bg-red-900/10'
-            : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            ? 'hover:bg-red-900/10'
+            : 'hover:bg-white/8'
       }`}
     >
       <div className={`w-12 h-12 rounded-xl ${colorConfig.bg} flex items-center justify-center shrink-0`}>
         <Icon className={`w-6 h-6 ${colorConfig.icon}`} />
       </div>
       <div className="flex-1 text-left min-w-0">
-        <span className={`font-semibold block ${danger ? 'text-red-500' : 'text-neutral-900 dark:text-white'}`}>
+        <span className={`font-semibold block ${danger ? 'text-red-400' : 'text-white'}`}>
           {label}
         </span>
         {subtitle && (
-          <span className="text-xs text-neutral-500 dark:text-neutral-400 truncate block">
+          <span className="text-xs text-[#ffe2cc] truncate block">
             {subtitle}
           </span>
         )}
       </div>
       {showChevron && !danger && !disabled && (
-        <ChevronRight className="w-5 h-5 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors shrink-0" />
+        <ChevronRight className="w-5 h-5 text-neutral-500 group-hover:text-neutral-300 transition-colors shrink-0" />
       )}
     </button>
   );

@@ -22,16 +22,16 @@ export function EmptyState({
   return (
     <div className="h-full min-h-75 flex flex-col items-center justify-center text-center py-12">
       <div className="relative w-20 h-20 mb-6">
-        <div className="absolute inset-0 bg-orange-500/20 rounded-3xl blur-xl" />
-        <div className="relative w-full h-full bg-neutral-200/80 dark:bg-neutral-800/80 rounded-3xl flex items-center justify-center border border-neutral-300/50 dark:border-neutral-700/50">
-          <Icon className="w-10 h-10 text-orange-500 dark:text-orange-400" />
+        <div className="absolute inset-0 bg-brand-orange/20 rounded-3xl blur-xl" />
+        <div className="relative w-full h-full bg-white/6 rounded-3xl flex items-center justify-center border border-white/10">
+          <Icon className="w-10 h-10 text-brand-orange" />
         </div>
       </div>
 
-      <p className="text-neutral-900 dark:text-white font-bold text-lg mb-2">{title}</p>
+      <p className="text-white font-bold text-lg mb-2">{title}</p>
 
       {description && (
-        <p className="text-neutral-500 dark:text-neutral-400 text-sm max-w-55 leading-relaxed">
+        <p className="text-[#ffe2cc] text-sm max-w-55 leading-relaxed">
           {description}
         </p>
       )}

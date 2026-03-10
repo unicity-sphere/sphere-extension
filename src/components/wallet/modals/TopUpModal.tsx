@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Sparkles, CheckCircle, XCircle } from 'lucide-react';
 import { useIdentity } from '@/sdk';
-import { BaseModal, ModalHeader, Button } from '@/components/ui';
+import { WalletScreen, ModalHeader, Button } from '@/components/ui';
 import { getErrorMessage } from '@/sdk/errors';
 
 const FAUCET_API_URL = 'https://faucet.unicity.network/api/v1/faucet/request';
@@ -82,20 +82,20 @@ export function TopUpModal({ isOpen, onClose }: TopUpModalProps) {
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={handleClose} showOrbs={false}>
+    <WalletScreen isOpen={isOpen} onClose={handleClose}>
       <ModalHeader title="Top Up" icon={Plus} onClose={handleClose} />
 
       <div className="px-6 py-3 flex-1 flex flex-col">
         <div className="flex flex-col items-center text-center py-4">
-          <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center mb-4">
-            <Sparkles className="w-6 h-6 text-orange-500" />
+          <div className="w-12 h-12 rounded-full bg-brand-orange/10 flex items-center justify-center mb-4">
+            <Sparkles className="w-6 h-6 text-brand-orange" />
           </div>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+          <p className="text-sm text-[#ffe2cc] mb-6">
             Request test tokens from the Unicity faucet
           </p>
 
           {!nametag ? (
-            <p className="text-xs text-neutral-400 dark:text-neutral-500">
+            <p className="text-xs text-neutral-500">
               Nametag is required to request tokens
             </p>
           ) : (
@@ -119,14 +119,14 @@ export function TopUpModal({ isOpen, onClose }: TopUpModalProps) {
 
               {faucetError && (
                 <div className="mt-4 w-full flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <XCircle className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-xs text-red-600 dark:text-red-400">{faucetError}</p>
+                  <XCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-400">{faucetError}</p>
                 </div>
               )}
             </>
           )}
         </div>
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }

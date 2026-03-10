@@ -1,5 +1,5 @@
 import { Download, Key, ShieldCheck } from 'lucide-react';
-import { BaseModal, MenuButton } from '@/components/ui';
+import { WalletScreen, MenuButton } from '@/components/ui';
 
 interface BackupWalletModalProps {
   isOpen: boolean;
@@ -17,13 +17,13 @@ export function BackupWalletModal({
   hasMnemonic = true,
 }: BackupWalletModalProps) {
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} size="sm" showOrbs={false}>
+    <WalletScreen isOpen={isOpen} onClose={onClose}>
       <div className="relative px-6 py-5 flex flex-col items-center text-center">
         <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
           <ShieldCheck className="w-8 h-8 text-green-500" />
         </div>
-        <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-1">Backup Wallet</h3>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <h3 className="text-xl font-bold text-white mb-1">Backup Wallet</h3>
+        <p className="text-sm text-[#ffe2cc]">
           Choose how you want to backup your wallet
         </p>
       </div>
@@ -47,11 +47,11 @@ export function BackupWalletModal({
         />
         <button
           onClick={onClose}
-          className="w-full py-3 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+          className="w-full py-3 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
         >
           Cancel
         </button>
       </div>
-    </BaseModal>
+    </WalletScreen>
   );
 }

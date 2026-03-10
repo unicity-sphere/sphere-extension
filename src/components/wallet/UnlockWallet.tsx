@@ -28,24 +28,21 @@ export function UnlockWallet({ onUnlock }: UnlockWalletProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white dark:bg-neutral-900 h-full relative overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-3xl bg-orange-500/5 dark:bg-orange-500/10 pointer-events-none" />
-      <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full blur-3xl bg-purple-500/5 dark:bg-purple-500/10 pointer-events-none" />
+    <div className="flex-1 flex flex-col items-center justify-center p-6 bg-transparent h-full relative overflow-hidden no-text-shadow">
 
       <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6">
         {/* Lock Icon */}
         <div className="relative">
-          <div className="absolute inset-0 rounded-2xl blur-lg opacity-50 bg-orange-500" />
-          <div className="relative w-16 h-16 rounded-2xl bg-linear-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-xl shadow-orange-500/25">
+          <div className="absolute inset-0 rounded-2xl blur-lg opacity-50 bg-brand-orange" />
+          <div className="relative w-16 h-16 rounded-2xl bg-linear-to-br from-brand-orange to-brand-orange-dark flex items-center justify-center shadow-xl shadow-brand-orange/25">
             <Lock className="w-8 h-8 text-white" />
           </div>
         </div>
 
         {/* Title */}
         <div className="text-center space-y-1">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Unlock Wallet</h2>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <h2 className="text-xl font-bold text-white">Unlock Wallet</h2>
+          <p className="text-sm text-[#ffe2cc]">
             Enter your password to continue
           </p>
         </div>
@@ -64,22 +61,22 @@ export function UnlockWallet({ onUnlock }: UnlockWalletProps) {
               required
               autoFocus
               disabled={isLoading}
-              className="w-full px-4 py-3 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 disabled:opacity-50 transition-colors"
+              className="w-full px-4 py-3 text-sm bg-[#1a1a1a] border border-white/10 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange disabled:opacity-50 transition-colors"
             />
           </div>
 
           {/* Error Display */}
           {error && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
-              <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
-              <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-900/20 border border-red-800/50">
+              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+              <p className="text-xs text-red-400">{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={isLoading || !password.trim()}
-            className="w-full py-3 px-4 bg-linear-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-xl shadow-lg shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] transition-transform"
+            className="w-full py-3 px-4 bg-linear-to-r from-brand-orange to-brand-orange-dark text-white text-sm font-mono font-medium rounded-xl shadow-lg shadow-brand-orange/25 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] transition-transform"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
