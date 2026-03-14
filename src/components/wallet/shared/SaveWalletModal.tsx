@@ -7,10 +7,12 @@ interface SaveWalletModalProps {
   onConfirm: (filename: string, password?: string) => void;
   onCancel: () => void;
   hasMnemonic?: boolean;
+  /** Default filename (without extension) */
+  defaultFilename?: string;
 }
 
-export function SaveWalletModal({ show, onConfirm, onCancel, hasMnemonic }: SaveWalletModalProps) {
-  const [filename, setFilename] = useState('alpha_wallet_backup');
+export function SaveWalletModal({ show, onConfirm, onCancel, hasMnemonic, defaultFilename = 'alpha_wallet_backup' }: SaveWalletModalProps) {
+  const [filename, setFilename] = useState(defaultFilename);
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState('');
@@ -30,7 +32,7 @@ export function SaveWalletModal({ show, onConfirm, onCancel, hasMnemonic }: Save
       }
     }
     onConfirm(filename, password || undefined);
-    setFilename('alpha_wallet_backup');
+    setFilename(defaultFilename);
     setPassword('');
     setPasswordConfirm('');
     setError('');

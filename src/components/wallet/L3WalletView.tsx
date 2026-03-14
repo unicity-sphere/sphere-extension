@@ -447,6 +447,7 @@ export function L3WalletView({
         onConfirm={handleSaveWallet}
         onCancel={() => setIsSaveWalletOpen(false)}
         hasMnemonic={true}
+        defaultFilename={identity?.nametag?.replace(/^@/, '') || 'sphere_wallet_backup'}
       />
 
     </div>
