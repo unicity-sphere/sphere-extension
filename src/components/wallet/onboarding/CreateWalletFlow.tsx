@@ -5,6 +5,8 @@
  * Create flow:  start → nametag → passwordSetup → processing → mnemonicBackup → done
  * Restore flow: start → restoreMethod → restore → passwordSetup → processing → done
  */
+import { useCallback } from "react";
+import { useSphereContext } from "@/sdk/context";
 import { useOnboardingFlow } from "./useOnboardingFlow";
 import { StartScreen } from "./StartScreen";
 import { RestoreMethodScreen } from "./RestoreMethodScreen";
@@ -17,6 +19,8 @@ import { NametagScreen } from "./NametagScreen";
 export type { OnboardingStep } from "./useOnboardingFlow";
 
 export function CreateWalletFlow() {
+  const { exportWallet, nametag } = useSphereContext();
+
   const {
     // Step management
     step,
@@ -61,9 +65,27 @@ export function CreateWalletFlow() {
     handleMintNametag,
     handleSkipNametag,
     handlePasswordConfirm,
-    handleProcessingComplete,
     handleMnemonicBackupConfirm,
   } = useOnboardingFlow();
+
+  const handleDownloadBackup = useCallback(async () => {
+    try {
+      const jsonData = await exportWallet();
+      const tag = (nametag || nametagInput.trim())?.replace(/^@/, "") || null;
+      const fileName = tag
+        ? `${tag}.json`
+        : "sphere_wallet_backup.json";
+      const blob = new Blob([jsonData], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download backup:", err);
+    }
+  }, [exportWallet, nametag, nametagInput]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-full p-6 text-center relative">
@@ -130,13 +152,13 @@ export function CreateWalletFlow() {
           title={processingTitle}
           completeTitle={processingCompleteTitle}
           isComplete={isProcessingComplete}
-          onComplete={handleProcessingComplete}
         />
       )}
 
       {step === "mnemonicBackup" && generatedMnemonic && (
         <MnemonicBackupScreen
           mnemonic={generatedMnemonic}
+          onDownloadBackup={handleDownloadBackup}
           onConfirm={handleMnemonicBackupConfirm}
         />
       )}

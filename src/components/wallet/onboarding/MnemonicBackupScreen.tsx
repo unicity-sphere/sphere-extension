@@ -3,16 +3,18 @@
  * Shows the generated mnemonic words in a grid for user backup
  * Uses same styling patterns as the rest of the onboarding flow
  */
-import { ShieldAlert, Copy, Check } from "lucide-react";
+import { ShieldAlert, Copy, Check, Download } from "lucide-react";
 import { useState, useCallback } from "react";
 
 interface MnemonicBackupScreenProps {
   mnemonic: string;
+  onDownloadBackup?: () => void;
   onConfirm: () => void;
 }
 
 export function MnemonicBackupScreen({
   mnemonic,
+  onDownloadBackup,
   onConfirm,
 }: MnemonicBackupScreenProps) {
   const [copied, setCopied] = useState(false);
@@ -54,7 +56,7 @@ export function MnemonicBackupScreen({
 
       <p className="text-[#ffe2cc] text-sm mb-5 mx-auto leading-relaxed">
         Write down these 12 words in order and keep them safe.{" "}
-        <span className="text-amber-400 font-semibold">
+        <span className="text-brand-orange font-semibold">
           This is the only way to recover your wallet.
         </span>
       </p>
@@ -93,6 +95,17 @@ export function MnemonicBackupScreen({
           </>
         )}
       </button>
+
+      {/* Download backup button */}
+      {onDownloadBackup && (
+        <button
+          onClick={onDownloadBackup}
+          className="flex items-center justify-center gap-2 w-full mb-5 px-4 py-2.5 text-sm text-[#ffe2cc] border border-white/15 hover:bg-white/6 transition-colors rounded-xl"
+        >
+          <Download className="w-4 h-4" />
+          <span>Download Backup File</span>
+        </button>
+      )}
 
       {/* Warning notice */}
       <div className="mb-5 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">

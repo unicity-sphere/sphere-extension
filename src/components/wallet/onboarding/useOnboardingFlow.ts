@@ -255,15 +255,19 @@ export function useOnboardingFlow() {
 
   // ---- PROCESSING COMPLETE ----
 
-  const handleProcessingComplete = useCallback(() => {
-    if (isRestoreFlow) {
-      // Restore flow: done, reload
-      window.location.reload();
-    } else {
-      // Create flow: show mnemonic backup
-      setStep("mnemonicBackup");
+  // Auto-transition when processing completes
+  useEffect(() => {
+    if (isProcessingComplete && step === "processing") {
+      const timer = setTimeout(() => {
+        if (!isRestoreFlow && generatedMnemonic) {
+          setStep("mnemonicBackup");
+        } else {
+          window.location.reload();
+        }
+      }, 800);
+      return () => clearTimeout(timer);
     }
-  }, [isRestoreFlow]);
+  }, [isProcessingComplete, isRestoreFlow, generatedMnemonic, step]);
 
   // ---- MNEMONIC BACKUP ----
 
@@ -316,7 +320,6 @@ export function useOnboardingFlow() {
     handleMintNametag,
     handleSkipNametag,
     handlePasswordConfirm,
-    handleProcessingComplete,
     handleMnemonicBackupConfirm,
   };
 }
